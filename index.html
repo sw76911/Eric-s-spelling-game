@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>單字貓大冒險 V25.0 - 私密雲端版</title>
+    <style>
+        /* (延用之前的 CSS 樣式，保持美觀與貓咪動畫) */
+        :root { --primary: #4a90e2; --success: #2ecc71; --gold: #f1c40f; }
+        body { font-family: sans-serif; background: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; width: 420px; height: 90vh; border-radius: 30px; padding: 20px; position: relative; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        #lockScreen { position: absolute; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 30px; }
+        .sync-status { font-size: 10px; color: #999; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="lockScreen">
+    <h2>🔒 私人存取控制</h2>
+    <input type="password" id="adminPass" style="padding:15px; border:2px solid var(--primary); border-radius:10px; text-align:center;" placeholder="請輸入進入密碼">
+    <button onclick="unlock()" style="margin-top:15px; padding:10px 40px; background:var(--primary); color:white; border:none; border-radius:10px;">驗證並進入</button>
+</div>
+
+<div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="sync-status" id="syncTag">● 本地模式</div>
+        <div style="font-weight:bold; color:var(--gold);">💰 <span id="coinDisplay">0</span></div>
+    </div>
+
+    <div id="mainGame" style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+        <h3 id="catNameDisplay">讀取中...</h3>
+        <p>在這裡進行你的單字探險！</p>
+        </div>
+
+    <div style="margin-top:auto; border-top:1px solid #eee; padding-top:10px;">
+        <button onclick="manualSync()" style="width:100%; padding:8px; font-size:12px; border:1px solid #ccc; border-radius:5px; background:none;">🔄 手動上傳至 Google 雲端</button>
+    </div>
+</div>
+
+<script>
+    // 1. 你的設定
+    const MY_ENTRY_PASSWORD = "0960604829"; 
+    const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycby1Z3RWn78MxZgJgWSoHAmb4Hi7MeUenyVrk8WVUVBgNo1NrhwvXqmIvu71hyvTHSs/exec"https://script.google.com/macros/s/AKfycby1Z3RWn78MxZgJgWSoHAmb4Hi7MeUenyVrk8WVUVBgNo1NrhwvXqmIvu71hyvTHSs/exec"; 
+    let state = {
+        coins: 100, hunger: 80, clean: 80, mood: 80, 
+        catName: '小橘',
+        inventory: { fish: 2, soap: 1 }, 
+        bag: [], 
+        wrongList: [],
+        equipped: { head:null, suit:null, socks:null, color:'#f39c12' }
+    };
+
+    // 2. 解鎖邏輯
+    function unlock() {
+        const p = document.getElementById('adminPass').value;
+        if (p === MY_ENTRY_PASSWORD) {
+            document.getElementById('lockScreen').style.display = 'none';
+            autoLoadCloud(); // 進入時自動從雲端抓取最新進度
+        } else {
+            alert("密碼不正確");
+        }
+    }
+
+    // 3. 雲端同步邏輯 (使用 Google Sheets 作為後端)
+    async function autoLoadCloud() {
+        if (!GOOGLE_SCRIPT_URL) { loadFromLocal(); return; }
+        document.getElementById('syncTag').innerText = "⏳ 正在同步雲端...";
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL);
+            const cloudData = await response.json();
+            if (cloudData) {
+                state = cloudData;
+                updateUI();
+                document.getElementById('syncTag').innerText = "● 雲端已同步";
+            }
+        } catch (e) {
+            loadFromLocal();
+            document.getElementById('syncTag').innerText = "● 離線模式 (載入失敗)";
+        }
+    }
+
+    async function manualSync() {
+        if (!GOOGLE_SCRIPT_URL) return alert("請先設定 Google Script URL");
+        document.getElementById('syncTag').innerText = "⏳ 上傳中...";
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Google Apps Script 限制
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+            document.getElementById('syncTag').innerText = "● 上傳成功";
+            saveToLocal();
+            alert("進度已儲存至 Google 雲端！手機端重新開啟即可看到。");
+        } catch (e) {
+            alert("同步失敗");
+        }
+    }
+
+    function saveToLocal() { localStorage.setItem('catGame_V25', JSON.stringify(state)); }
+    function loadFromLocal() {
+        const local = localStorage.getItem('catGame_V25');
+        if (local) { state = JSON.parse(local); updateUI(); }
+    }
+
+    function updateUI() {
+        document.getElementById('coinDisplay').innerText = state.coins;
+        document.getElementById('catNameDisplay').innerText = state.catName;
+    }
+</script>
+</body>
+</html>
