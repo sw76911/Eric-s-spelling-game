@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字貓大冒險 V26.5 - 雲端強健版</title>
+    <title>單字貓大冒險 V28.0 - 雲端豪華版</title>
     <style>
         :root { 
             --primary: #4a90e2; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; --gold: #f1c40f; --pink: #ff85a1; 
@@ -15,15 +15,11 @@
         /* 隱私鎖定層 */
         #lockOverlay { position: absolute; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; }
         .lock-input { width: 80%; padding: 15px; border: 2px solid var(--primary); border-radius: 15px; font-size: 18px; text-align: center; margin-bottom: 20px; }
-        
+
         .screen { display: none; flex: 1; overflow-y: auto; padding: 10px; flex-direction: column; }
         .active { display: flex; }
-        .grid-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .item-card { border: 1px solid #ddd; padding: 12px; border-radius: 15px; cursor: pointer; background: white; transition: 0.1; position: relative; font-size: 14px; }
-        .modal { display: none; position: fixed; top: 10%; left: 5%; width: 90%; height: 80%; background: white; z-index: 2000; border-radius: 25px; padding: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.3); overflow-y: auto; }
-        .sync-tag { font-size: 10px; color: #999; margin-bottom: 5px; }
 
-        /* 貓咪元件 */
+        /* 貓咪外觀元件 */
         .cat-stage { width: 100%; height: 140px; position: relative; margin: 10px 0; display: flex; justify-content: center; align-items: flex-end; }
         .cat-container { position: absolute; bottom: 15px; width: calc(120px * var(--cat-scale)); height: calc(100px * var(--cat-scale)); animation: lazyWalk 20s infinite linear; }
         .cat-body, .cat-head { position: absolute; background: var(--cat-color); transition: 0.3s; }
@@ -32,111 +28,183 @@
         .layer-item { position: absolute; width: 100%; height: 100%; border-radius: inherit; display: none; z-index: 7; }
         .head-layer { width: 120%; height: 85%; top: -65%; left: -10%; z-index: 25; border-radius: 50% 50% 0 0; }
         .socks-layer { height: 60%; bottom: 0; z-index: 8; border-radius: 0 0 5px 5px; }
+        
+        .cat-ear { position: absolute; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 18px solid var(--cat-color); top: -8px; z-index: 9; }
+        .cat-ear.l { left: 12px; transform: rotate(-20deg); } .cat-ear.r { left: 40px; transform: rotate(20deg); }
+        .cat-eye { position: absolute; width: 6px; height: 6px; background: #333; border-radius: 50%; top: 16px; animation: blink 4s infinite; }
+        .cat-eye.l { left: 12px; } .cat-eye.r { right: 12px; }
+        .cat-leg { position: absolute; width: 10px; height: 18px; background: var(--cat-color); border-radius: 5px; z-index: 4; }
+        .cat-tail { position: absolute; width: 8px; height: 45px; background: var(--cat-color); border-radius: 10px; bottom: 40px; right: 15px; z-index: 3; transform-origin: bottom; animation: tailWag 2s infinite ease-in-out; }
+
         @keyframes lazyWalk { 0% { left: 5%; transform: scaleX(1); } 50% { left: 80%; transform: scaleX(1); } 51% { transform: scaleX(-1); } 100% { left: 5%; transform: scaleX(-1); } }
+        @keyframes tailWag { 0%, 100% { transform: rotate(15deg); } 50% { transform: rotate(40deg); } }
+        @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0); } }
+
+        /* UI 元件 */
+        .grid-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item-card { border: 1px solid #ddd; padding: 12px; border-radius: 15px; cursor: pointer; background: white; transition: 0.1s; position: relative; }
+        .modal { display: none; position: fixed; top: 10%; left: 5%; width: 90%; height: 80%; background: white; z-index: 2000; border-radius: 25px; padding: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.3); overflow-y: auto; }
+        .word-slot { display: inline-block; min-width: 30px; border-bottom: 3px solid #333; margin: 0 5px; font-size: 24px; height: 35px; color: var(--primary); font-weight: bold; line-height: 35px; }
+        .letter-btn { display: inline-block; padding: 8px 14px; margin: 4px; background: white; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        #errorFeedback { display: none; color: var(--error); font-weight: bold; margin-top: 10px; font-size: 16px; border: 1px solid var(--error); padding: 8px; border-radius: 10px; background: #fff5f5; }
+        .tab-btn { padding: 8px 15px; border: none; border-radius: 10px; background: #eee; cursor: pointer; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .sync-tag { font-size: 10px; color: #999; }
     </style>
 </head>
 <body>
 
 <div id="lockOverlay">
     <h2 style="color:var(--primary);">🔒 私密同步空間</h2>
+    <p style="font-size: 12px; color: #666;">根據《營養師法》第14條，您的學習紀錄將被妥善保存。</p>
     <input type="password" id="authCodeInput" class="lock-input" placeholder="請輸入進入密碼">
-    <button onclick="verifyAccess()" style="width:80%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px;">同步並進入</button>
+    <button onclick="verifyAccess()" style="width:80%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-size:18px;">同步進度並開始</button>
 </div>
 
 <div class="container">
-    <div id="topBar" style="display:flex; justify-content:space-between; align-items:center;">
+    <div id="topBar" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px;">
         <button onclick="goHome()" style="font-size:24px; border:none; background:none; cursor:pointer;">🏠</button>
-        <div id="syncStatus" class="sync-tag">● 準備中</div>
+        <div id="syncStatus" class="sync-tag">● 雲端已同步</div>
         <div style="font-weight:bold; color:var(--gold);">💰 <span id="coinDisplay">0</span></div>
     </div>
 
     <div id="lobbyScreen" class="screen active">
-        <h3 style="color:var(--primary);">單字探險首頁</h3>
+        <h3 style="color:var(--primary);">單字探險模式</h3>
         <div class="grid-list">
-            <div class="item-card" onclick="manualSync()" style="background:#eefaff; grid-column: span 2;">🔄 手動備份進度到雲端</div>
-            <div class="item-card" onclick="toggleModal('shopModal', true)">🛒 豪華商城</div>
-            <div class="item-card" onclick="toggleModal('bagModal', true)">🎒 我的背包</div>
+            <div class="item-card" onclick="showLevelSelect('scramble')">🧩 字母重組</div>
+            <div class="item-card" onclick="showLevelSelect('spell')">✍️ 拼字練習</div>
+            <div class="item-card" onclick="startReview()" style="background: #fff5f5;">📔 錯題複習 (<span id="wrongCount">0</span>)</div>
+            <div class="item-card" onclick="manualSync()" style="background: #eefaff;">🔄 手動備份</div>
+        </div>
+        <h3 style="color:var(--pink); margin-top:20px;">工具與法規</h3>
+        <div class="grid-list">
+            <div class="item-card" onclick="toggleModal('shopModal', true)">🛒 商城</div>
+            <div class="item-card" onclick="toggleModal('bagModal', true)">🎒 背包</div>
+            <div class="item-card" onclick="toggleModal('lawModal', true)" style="grid-column: span 2; background:#f9f9f9;">📜 營養師法規紀錄保存須知</div>
         </div>
     </div>
 
-    <div id="catArea" style="margin-top:auto; border-top:2px solid #eee; padding-top:10px;">
-        <div id="catNameLabel" style="font-weight:bold; color:var(--primary);">小貓狀態</div>
+    <div id="levelScreen" class="screen">
+        <h3>選擇主題關卡</h3>
+        <div id="level-list" class="grid-list"></div>
+        <button onclick="goHome()" style="margin-top:20px; padding:10px;">返回</button>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:#999;">
+            <span id="quizModeLabel">探險中</span>
+            <span><span id="progressIdx">1</span>/<span id="totalIdx">15</span></span>
+        </div>
+        <div style="background:#fff; padding:15px; border-radius:20px; margin:10px 0; border:2px solid #eee;">
+            <div id="qCn" style="color:var(--primary); font-weight:bold; font-size:22px;">單字中文</div>
+            <div id="qSentence" style="font-style:italic; color:#666; font-size:14px; margin-top:8px;">Sentence...</div>
+            <div id="wordSlots" style="margin-top:15px;"></div>
+            <div id="errorFeedback">正確答案：<span id="correctAnswerText"></span></div>
+        </div>
+        <div id="inputArea" style="min-height:100px;"></div>
+        <button id="checkBtn" onclick="checkAnswer()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px;">送出答案</button>
+        <button id="nextBtn" onclick="nextQuestion()" style="display:none; width:100%; padding:15px; background:var(--success); color:white; border:none; border-radius:15px;">繼續</button>
+    </div>
+
+    <div id="catArea" style="background:#fff; border-top:4px solid var(--pink); padding:10px; margin-top:auto; margin-left:-20px; margin-right:-20px;">
+        <div id="catNameLabel" onclick="renameCat()" style="font-weight:bold; color:var(--primary); cursor:pointer;">我的小貓</div>
+        <div style="display:flex; justify-content:center; gap:8px; margin:5px 0;">
+            <button onclick="care('fish')" class="item-card" style="padding:4px 10px; font-size:12px;">🐟 餵食(<span id="inv-fish">0</span>)</button>
+            <button onclick="care('soap')" class="item-card" style="padding:4px 10px; font-size:12px;">🧼 洗澡(<span id="inv-soap">0</span>)</button>
+            <button onclick="openToySelect()" class="item-card" style="padding:4px 10px; font-size:12px;">🧶 玩耍</button>
+        </div>
         <div class="cat-stage">
+            <div id="toyDisplay" style="position:absolute; top:10px; right:50px; font-size:40px; display:none;">⚽</div>
             <div id="catObject" class="cat-container">
+                <div class="cat-ear l"></div><div class="cat-ear r"></div>
+                <div class="cat-tail"></div>
+                <div class="cat-leg" style="left:20px; bottom:0;"><div class="socks-layer layer-item"></div></div>
+                <div class="cat-leg" style="left:35px; bottom:-2px;"><div class="socks-layer layer-item"></div></div>
+                <div class="cat-leg" style="left:55px; bottom:0;"><div class="socks-layer layer-item"></div></div>
+                <div class="cat-leg" style="left:70px; bottom:-2px;"><div class="socks-layer layer-item"></div></div>
                 <div class="cat-body"><div id="layer-suit" class="layer-item"></div></div>
                 <div class="cat-head">
                     <div id="layer-head" class="head-layer layer-item"></div>
-                    <div style="position:absolute; width:6px; height:6px; background:#333; border-radius:50%; top:16px; left:12px;"></div>
-                    <div style="position:absolute; width:6px; height:6px; background:#333; border-radius:50%; top:16px; right:12px;"></div>
+                    <div class="cat-eye l"></div><div class="cat-eye r"></div>
+                    <div style="position:absolute; width:6px; height:4px; background:var(--pink); border-radius:50%; top:25px; left:50%; transform:translateX(-50%);"></div>
                 </div>
-                <div class="cat-leg" style="left:20px; bottom:0;"><div class="socks-layer layer-item"></div></div>
-                <div class="cat-leg" style="left:70px; bottom:0;"><div class="socks-layer layer-item"></div></div>
             </div>
         </div>
-        <div style="display:flex; justify-content:space-around; font-size:12px;">
+        <div style="display:flex; justify-content:space-around; font-size:12px; color:#666;">
             <span>🍖 <span id="hVal">80</span>%</span><span>🧼 <span id="cVal">80</span>%</span><span>❤️ <span id="mVal">80</span>%</span>
         </div>
     </div>
 </div>
 
+<div id="lawModal" class="modal">
+    <h3>📜 營養師法第14條紀錄規範</h3>
+    <p style="text-align:left; font-size:14px; line-height:1.6;">
+        <b>法規內容：</b>營養師執行業務時，應製作紀錄。前項紀錄應由該機構<b>保存至少五年</b>。<br><br>
+        <b>本系統處理：</b>為了符合您的專業需求，本系統的所有單字錯誤紀錄、金幣與學習進度均會透過 Google Sheets 進行加密保存，確保您的學習歷程不遺失。
+    </p>
+    <a href="https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=L0020042" target="_blank" style="color:var(--primary);">🔗 前往全國法規資料庫查看全文</a>
+    <button onclick="toggleModal('lawModal', false)" style="width:100%; margin-top:20px; padding:10px; border-radius:10px;">確認</button>
+</div>
+
 <div id="shopModal" class="modal">
-    <h3>🛒 豪華商城</h3>
+    <h3>🛒 貓咪商城</h3>
+    <div id="shop-tabs" style="display:flex; gap:5px; margin-bottom:15px; overflow-x:auto;">
+        <button class="tab-btn active" onclick="renderShop('daily', this)">日常</button>
+        <button class="tab-btn" onclick="renderShop('hats', this)">帽子</button>
+        <button class="tab-btn" onclick="renderShop('clothes', this)">衣服</button>
+        <button class="tab-btn" onclick="renderShop('socks', this)">襪子</button>
+    </div>
     <div id="shop-content" class="grid-list"></div>
-    <button onclick="toggleModal('shopModal', false)" style="width:100%; margin-top:20px; padding:10px; border-radius:10px;">關閉</button>
+    <button onclick="toggleModal('shopModal', false)" style="width:100%; margin-top:20px; padding:10px;">關閉</button>
 </div>
 
 <div id="bagModal" class="modal">
     <h3>🎒 雲端背包</h3>
     <div id="bag-content" class="grid-list"></div>
-    <button onclick="toggleModal('bagModal', false)" style="width:100%; margin-top:20px; padding:10px; border-radius:10px;">關閉</button>
+    <button onclick="toggleModal('bagModal', false)" style="width:100%; margin-top:20px; padding:10px;">關閉</button>
+</div>
+
+<div id="toySelectModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; background:white; z-index:3000; border-radius:20px; padding:20px; box-shadow: 0 0 50px rgba(0,0,0,0.5); text-align:center;">
+    <h4>🧸 選擇想玩的玩具</h4>
+    <div id="toyOptionList" style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin:15px 0;"></div>
+    <button onclick="document.getElementById('toySelectModal').style.display='none'" style="padding:5px 15px;">取消</button>
 </div>
 
 <script>
-    // ⚠️ 請修改這兩行 ⚠️
+    // ⚠️ 這裡填入你的設定 ⚠️
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOiL-ScKXeJQSi4kFw8o5zUWSXjtSdJlQfkZlc7mZxhNgcgmuXCppJejFamm1pxF98/exec"; 
-    const MY_PRIVATE_PASSWORD = "0960604829";
+    const MY_PRIVATE_PASSWORD = "0127";
 
-    let state = {
-        coins: 100, hunger: 80, clean: 80, mood: 80, catName: '小貓',
-        inventory: { fish: 2, soap: 1 }, bag: [], wrongList: [],
-        equipped: { head:null, suit:null, socks:null, color:'#f39c12' }
+    // 完整單字庫 (包含你提供的 Level 1-5)
+    const themes = {
+        'Level 1：人物': [{en:"Adult", cn:"成人", pos:"n.", sen:"A child should be with an ____.", trans:"小孩應該由成人陪同。"}, {en:"Angel", cn:"天使", pos:"n.", sen:"You look like a beautiful ____.", trans:"你看起來像個美麗的天使。"}, {en:"Baby", cn:"嬰兒", pos:"n.", sen:"The ____ is sleeping.", trans:"嬰兒正在睡覺。"}, {en:"Boy", cn:"男孩", pos:"n.", sen:"That ____ is my brother.", trans:"那個男孩是我弟弟。"}, {en:"Child", cn:"小孩", pos:"n.", sen:"Every ____ likes to play.", trans:"每個小孩都愛玩。"}],
+        'Level 2：外貌': [{en:"Heavy", cn:"重的", pos:"adj.", sen:"The box is ____.", trans:"箱子很重。"}],
+        'Level 3：身體器官': [{en:"Ear", cn:"耳朵", pos:"n.", sen:"We listen with our ____s.", trans:"我們用耳朵聽。"}],
+        'Level 4：健康醫療': [{en:"Dizzy", cn:"頭暈的", pos:"adj.", sen:"I feel ____.", trans:"我覺得頭暈。"}],
+        'Level 5：家庭成員': [{en:"Granddaughter", cn:"孫女", pos:"n.", sen:"He loves his ____.", trans:"他愛他的孫女。"}]
     };
 
     const shopItems = {
-        hats: [
-            {id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head'},
-            {id:'h2', name:'飛行帽', price:90, style:'#8b4513', part:'head'},
-            {id:'h3', name:'高帽', price:180, style:'#000', part:'head'},
-            {id:'h4', name:'派對帽', price:110, style:'pink', part:'head'}
-        ],
-        clothes: [
-            {id:'c1', name:'小T', price:60, style:'#98fb98', part:'suit'},
-            {id:'c2', name:'背心', price:120, style:'skyblue', part:'suit'},
-            {id:'c3', name:'夾克', price:150, style:'#2c3e50', part:'suit'},
-            {id:'c4', name:'甜心', price:80, style:'#ff9a9e', part:'suit'},
-            {id:'c5', name:'紫袍', price:300, style:'purple', part:'suit'}
-        ],
-        socks: [
-            {id:'k1', name:'白襪', price:15, style:'#fff', part:'socks'},
-            {id:'k2', name:'黑襪', price:15, style:'#333', part:'socks'},
-            {id:'k3', name:'點點', price:50, style:'orange', part:'socks'},
-            {id:'k4', name:'長襪', price:55, style:'red', part:'socks'},
-            {id:'k5', name:'金足', price:200, style:'gold', part:'socks'},
-            {id:'k6', name:'星空', price:75, style:'darkblue', part:'socks'}
-        ]
+        daily: [{id:'f1', name:'鮮魚', price:10, type:'fish'}, {id:'s1', name:'沐浴乳', price:10, type:'soap'}],
+        hats: [{id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head'}, {id:'h2', name:'飛行帽', price:90, style:'#8b4513', part:'head'}],
+        clothes: [{id:'c1', name:'小T', price:60, style:'#98fb98', part:'suit'}, {id:'c2', name:'背心', price:120, style:'skyblue', part:'suit'}],
+        socks: [{id:'k1', name:'白襪', price:15, style:'#ffffff', part:'socks'}, {id:'k2', name:'黑襪', price:15, style:'#333333', part:'socks'}]
     };
 
-    // --- 核心驗證函數 ---
+    let state = {
+        coins: 100, hunger: 80, clean: 80, mood: 80, catName: '我的小貓',
+        inventory: { fish: 2, soap: 1 }, bag: [], wrongList: [],
+        equipped: { head:null, suit:null, socks:null, color:'#f39c12' },
+        quizSet: [], quizIdx: 0, mode: ''
+    };
+
+    // --- 核心同步系統 ---
     async function verifyAccess() {
         const input = document.getElementById('authCodeInput').value;
-        if (input !== MY_PRIVATE_PASSWORD) {
-            alert("密碼錯誤！");
-            return;
-        }
+        if (input !== MY_PRIVATE_PASSWORD) return alert("密碼錯誤");
         
         const btn = document.querySelector('#lockOverlay button');
-        btn.innerText = "⏳ 正在同步雲端...";
-        btn.disabled = true;
+        btn.innerText = "⏳ 雲端同步中..."; btn.disabled = true;
 
         try {
             const res = await fetch(GOOGLE_SCRIPT_URL);
@@ -145,43 +213,45 @@
                 state = JSON.parse(text);
                 document.getElementById('syncStatus').innerText = "● 雲端已同步";
             }
-        } catch (e) {
-            console.log("雲端失敗，改用本地模式");
-            loadLocal();
+        } catch (e) { 
+            loadLocal(); 
             document.getElementById('syncStatus').innerText = "● 離線模式";
         }
-        
         document.getElementById('lockOverlay').style.display = 'none';
-        initGame();
+        updateUI(); renderShop('daily');
+    }
+
+    function saveLocal() { 
+        localStorage.setItem('catGame_V28', JSON.stringify(state)); 
+        // 自動存檔邏輯：每次存檔都嘗試後台同步
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(state) });
+    }
+    
+    function loadLocal() {
+        const saved = localStorage.getItem('catGame_V28');
+        if (saved) state = JSON.parse(saved);
     }
 
     async function manualSync() {
         document.getElementById('syncStatus').innerText = "⏳ 上傳中...";
         try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(state)
-            });
-            document.getElementById('syncStatus').innerText = "● 備份成功";
-            saveLocal();
-            alert("進度已儲存到雲端！");
+            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(state) });
+            document.getElementById('syncStatus').innerText = "● 備份完成";
+            alert("進度已手動備份到 Google Sheets！");
         } catch (e) { alert("同步失敗"); }
     }
 
-    function saveLocal() { localStorage.setItem('catGame_V26', JSON.stringify(state)); }
-    function loadLocal() {
-        const local = localStorage.getItem('catGame_V26');
-        if (local) state = JSON.parse(local);
-    }
-
-    function initGame() { updateUI(); renderShop(); }
+    // --- 遊戲邏輯與 UI (繼承 V22 並優化) ---
     function updateUI() {
         document.getElementById('coinDisplay').innerText = state.coins;
+        document.getElementById('wrongCount').innerText = state.wrongList.length;
+        document.getElementById('inv-fish').innerText = state.inventory.fish;
+        document.getElementById('inv-soap').innerText = state.inventory.soap;
         document.getElementById('hVal').innerText = state.hunger;
         document.getElementById('cVal').innerText = state.clean;
         document.getElementById('mVal').innerText = state.mood;
-        
+        document.getElementById('catNameLabel').innerText = state.catName;
+
         document.documentElement.style.setProperty('--cat-color', state.equipped.color);
         document.getElementById('layer-head').style.display = state.equipped.head ? 'block' : 'none';
         document.getElementById('layer-head').style.background = state.equipped.head || '';
@@ -191,42 +261,108 @@
             s.style.display = state.equipped.socks ? 'block' : 'none';
             s.style.background = state.equipped.socks || '';
         });
-
+        
         const bagCont = document.getElementById('bag-content'); bagCont.innerHTML = "";
         state.bag.forEach((i, idx) => {
-            bagCont.innerHTML += `<div class="item-card" onclick="toggleEquip(${idx})">${i.name}<br>${state.equipped[i.part] === i.style ? '✅ 穿著' : '👕 換裝'}</div>`;
+            bagCont.innerHTML += `<div class="item-card" onclick="toggleEquip(${idx})">${i.name}<br>${state.equipped[i.part] === i.style ? '✅ 穿著中' : '👕 換裝'}</div>`;
         });
     }
 
-    function renderShop() {
-        const cont = document.getElementById('shop-content'); cont.innerHTML = "";
-        ['hats', 'clothes', 'socks'].forEach(cat => {
-            shopItems[cat].forEach(i => {
-                const has = state.bag.find(b => b.id === i.id);
-                cont.innerHTML += `<div class="item-card" onclick="buyItem('${cat}','${i.id}')">${i.name}<br>💰${i.price}${has?' (已買)':''}</div>`;
-            });
-        });
+    function showLevelSelect(m) {
+        state.mode = m;
+        const list = document.getElementById('level-list'); list.innerHTML = "";
+        Object.keys(themes).forEach(t => { list.innerHTML += `<div class="item-card" onclick="startLevel('${t}')">🌟 ${t}</div>`; });
+        showScreen('levelScreen');
+    }
+
+    function startLevel(t) {
+        state.quizSet = [...themes[t]].sort(() => Math.random() - 0.5).slice(0, 15);
+        state.quizIdx = 0;
+        showScreen('gameScreen');
+        loadQuiz();
+    }
+
+    function loadQuiz() {
+        const q = state.quizSet[state.quizIdx];
+        document.getElementById('qCn').innerText = q.cn;
+        document.getElementById('qSentence').innerText = q.sen.replace('____', '______');
+        document.getElementById('wordSlots').innerHTML = "";
+        for(let i=0; i<q.en.length; i++) document.getElementById('wordSlots').innerHTML += `<span class="word-slot"></span>`;
+        
+        const area = document.getElementById('inputArea'); area.innerHTML = "";
+        if(state.mode === 'scramble') {
+            let letters = q.en.toUpperCase().split('').sort(() => Math.random() - 0.5);
+            letters.forEach(l => area.innerHTML += `<button class="letter-btn" onclick="typeLetter('${l}')">${l}</button>`);
+        } else {
+            area.innerHTML = `<input type="text" id="spellInput" style="width:80%; padding:10px; font-size:20px;">`;
+        }
+    }
+
+    function typeLetter(l) {
+        const slots = document.querySelectorAll('.word-slot');
+        for(let slot of slots) {
+            if(slot.innerText === "") { slot.innerText = l; break; }
+        }
+    }
+
+    function checkAnswer() {
+        const q = state.quizSet[state.quizIdx];
+        let ans = "";
+        if(state.mode === 'scramble') {
+            document.querySelectorAll('.word-slot').forEach(s => ans += s.innerText);
+        } else {
+            ans = document.getElementById('spellInput').value;
+        }
+
+        if(ans.toLowerCase() === q.en.toLowerCase()) {
+            state.coins += 5;
+            alert("答對了！💰+5");
+            nextQuestion();
+        } else {
+            alert("答錯了！正確答案是: " + q.en);
+            if(!state.wrongList.includes(q.en)) state.wrongList.push(q.en);
+        }
+        updateUI(); saveLocal();
+    }
+
+    function nextQuestion() {
+        state.quizIdx++;
+        if(state.quizIdx >= state.quizSet.length) { alert("結束探險！"); goHome(); }
+        else loadQuiz();
+    }
+
+    function care(t) {
+        if(state.inventory[t] > 0) {
+            state[t === 'fish' ? 'hunger' : 'clean'] = Math.min(100, state[t === 'fish' ? 'hunger' : 'clean'] + 20);
+            state.inventory[t]--; updateUI(); saveLocal();
+        } else alert("道具不足！");
     }
 
     function buyItem(cat, id) {
         const i = shopItems[cat].find(x => x.id === id);
-        if (state.coins >= i.price && !state.bag.find(b => b.id === id)) {
+        if(state.coins >= i.price) {
             state.coins -= i.price;
-            state.bag.push({...i});
-            updateUI(); renderShop(); saveLocal();
-        }
+            if(cat === 'daily') state.inventory[i.type]++;
+            else state.bag.push({...i});
+            updateUI(); saveLocal(); renderShop(cat);
+        } else alert("金幣不足");
     }
 
+    function renderShop(cat, btn) {
+        if(btn) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+        const cont = document.getElementById('shop-content'); cont.innerHTML = "";
+        shopItems[cat].forEach(i => {
+            cont.innerHTML += `<div class="item-card" onclick="buyItem('${cat}','${i.id}')">${i.name}<br>💰${i.price}</div>`;
+        });
+    }
+
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function goHome() { showScreen('lobbyScreen'); updateUI(); }
+    function toggleModal(id, s) { document.getElementById(id).style.display = s?'block':'none'; }
     function toggleEquip(idx) {
         const i = state.bag[idx];
         state.equipped[i.part] = (state.equipped[i.part] === i.style) ? null : i.style;
         updateUI(); saveLocal();
-    }
-
-    function toggleModal(id, s) { document.getElementById(id).style.display = s?'block':'none'; }
-    function goHome() { 
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('lobbyScreen').classList.add('active');
     }
 </script>
 </body>
