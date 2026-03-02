@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字貓大冒險 V29.0</title>
+    <title>單字貓大冒險 V30.0</title>
     <style>
         :root { 
             --primary: #4a90e2; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; --gold: #f1c40f; --pink: #ff85a1; 
@@ -69,13 +69,14 @@
         <div class="grid-list">
             <div class="item-card" onclick="showLevelSelect('scramble')">🧩 字母重組</div>
             <div class="item-card" onclick="showLevelSelect('spell')">✍️ 拼字練習</div>
+            <div class="item-card" onclick="showLevelSelect('sentence')">📖 例句挑戰</div>
             <div class="item-card" onclick="startReview()" style="background: #fff5f5;">📔 錯題複習 (<span id="wrongCount">0</span>)</div>
-            <div class="item-card" onclick="manualSync()" style="background: #eefaff;">🔄 手動備份</div>
         </div>
         <h3 style="color:var(--pink); margin-top:20px;">商城與背包</h3>
         <div class="grid-list">
             <div class="item-card" onclick="toggleModal('shopModal', true)">🛒 商城</div>
             <div class="item-card" onclick="toggleModal('bagModal', true)">🎒 背包</div>
+            <div class="item-card" onclick="manualSync()" style="background: #eefaff; grid-column: span 2;">🔄 手動雲端備份</div>
         </div>
     </div>
 
@@ -91,13 +92,15 @@
             <span><span id="progressIdx">1</span>/<span id="totalIdx">15</span></span>
         </div>
         <div style="background:#fff; padding:15px; border-radius:20px; margin:10px 0; border:2px solid #eee;">
+            <div id="qPos" style="font-size:12px; color:var(--pink); font-weight:bold;">詞性</div>
             <div id="qCn" style="color:var(--primary); font-weight:bold; font-size:22px;">單字中文</div>
-            <div id="qSentence" style="font-style:italic; color:#666; font-size:14px; margin-top:8px;">Sentence...</div>
+            <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+            <div id="qSentence" style="font-style:italic; color:#666; font-size:16px;">Sentence...</div>
+            <div id="qTrans" style="color:#999; font-size:13px; margin-top:5px;">中文翻譯</div>
             <div id="wordSlots" style="margin-top:15px;"></div>
         </div>
         <div id="inputArea" style="min-height:100px;"></div>
         <button id="checkBtn" onclick="checkAnswer()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px;">送出答案</button>
-        <button id="nextBtn" onclick="nextQuestion()" style="display:none; width:100%; padding:15px; background:var(--success); color:white; border:none; border-radius:15px;">繼續</button>
     </div>
 
     <div id="catArea" style="background:#fff; border-top:4px solid var(--pink); padding:10px; margin-top:auto; margin-left:-20px; margin-right:-20px;">
@@ -167,37 +170,7 @@
     const MY_PRIVATE_PASSWORD = "0127";
 
     const themes = {
-        'Level 1：人物': [{en:"Adult", cn:"成人", pos:"n.", sen:"A child should be with an ____.", trans:"小孩應該由成人陪同。"}, {en:"Angel", cn:"天使", pos:"n.", sen:"You look like a beautiful ____.", trans:"你看起來像個美麗的天使。"}, {en:"Baby", cn:"嬰兒", pos:"n.", sen:"The ____ is sleeping.", trans:"嬰兒正在睡覺。"}, {en:"Boy", cn:"男孩", pos:"n.", sen:"That ____ is my brother.", trans:"那個男孩是我弟弟。"}, {en:"Child", cn:"小孩", pos:"n.", sen:"Every ____ likes to play.", trans:"每個小孩都愛玩。"},{ en: "Couple", cn: "情侶、夫妻", pos: "n.", sen: "They are a very happy ____.", trans: "他們是一對非常幸福的夫妻。" },
-{ en: "Customer", cn: "顧客", pos: "n.", sen: "The ____ is buying food in the shop.", trans: "顧客正在商店裡買食物。" },
-{ en: "Fool", cn: "呆子", pos: "n.", sen: "Don't be a ____; think before you act.", trans: "別當呆子，三思而後行。" },
-{ en: "Genius", cn: "天才", pos: "n.", sen: "Einstein was a great ____.", trans: "愛因斯坦是一位偉大的天才。" },
-{ en: "Gentleman", cn: "紳士", pos: "n.", sen: "He is a kind and polite ____.", trans: "他是一位善良且有禮貌的紳士。" },
-{ en: "Giant", cn: "巨人", pos: "n.", sen: "The ____ lives in a big castle.", trans: "巨人住在一座大城堡裡。" },
-{ en: "Girl", cn: "女孩", pos: "n.", sen: "The ____ is wearing a red dress.", trans: "那個女孩穿著一件紅色的洋裝。" },
-{ en: "Guest", cn: "客人、來賓", pos: "n.", sen: "We have a ____ coming for dinner.", trans: "我們有一位客人要來吃晚餐。" },
-{ en: "Guy", cn: "傢伙", pos: "n.", sen: "He is a nice ____.", trans: "他是個不錯的傢伙。" },
-{ en: "Hero", cn: "英雄", pos: "n.", sen: "Firemen are ____es in my heart.", trans: "消防員是我心目中的英雄。" },
-{ en: "Host", cn: "男主(持)人", pos: "n.", sen: "The ____ welcomed everyone to the party.", trans: "男主人歡迎大家參加聚會。" },
-{ en: "Kid", cn: "孩童、青年", pos: "n.", sen: "Don't be silly, ____.", trans: "孩子，別傻了。" },
-{ en: "King", cn: "國王", pos: "n.", sen: "The ____ wears a gold crown.", trans: "國王戴著金色的皇冠。" },
-{ en: "Lady", cn: "淑女、女士", pos: "n.", sen: "Ladies and gentlemen, welcome!", trans: "各位女士、先生，歡迎！" },
-{ en: "Male", cn: "男性", pos: "n./adj.", sen: "Is the cat a ____ or a female?", trans: "這隻貓是公的還是母的？" },
-{ en: "Man", cn: "男人", pos: "n.", sen: "That ____ is a doctor.", trans: "那個男人是一位醫生。" },
-{ en: "Master", cn: "主人、大師", pos: "n.", sen: "He is a ____ of cooking.", trans: "他是一位烹飪大師。" },
-{ en: "Neighbor", cn: "鄰居", pos: "n.", sen: "My ____ is very friendly.", trans: "我的鄰居非常友善。" },
-{ en: "Partner", cn: "夥伴", pos: "n.", sen: "She is my best dancing ____.", trans: "她是我最好的舞伴。" },
-{ en: "People", cn: "人們", pos: "n.", sen: "There are many ____ in the park.", trans: "公園裡有很多人。" },
-{ en: "Person", cn: "人", pos: "n.", sen: "She is a very kind ____.", trans: "她是一個非常善良的人。" },
-{ en: "Prince", cn: "王子", pos: "n.", sen: "The ____ lives in a castle.", trans: "王子住在城堡裡。" },
-{ en: "Princess", cn: "公主", pos: "n.", sen: "The ____ is very beautiful.", trans: "公主非常漂亮。" },
-{ en: "Queen", cn: "皇后", pos: "n.", sen: "The ____ lives in England.", trans: "皇后住在英國。" },
-{ en: "Stranger", cn: "陌生人", pos: "n.", sen: "Don't talk to a ____.", trans: "不要跟陌生人說話。" },
-{ en: "Teenager", cn: "青少年", pos: "n.", sen: "My brother is a ____ of 15.", trans: "我弟弟是個 15 歲的青少年。" },
-{ en: "Visitor", cn: "訪客", pos: "n.", sen: "There are many ____s in the museum.", trans: "博物館裡有很多訪客。" },
-{ en: "Woman", cn: "女人", pos: "n.", sen: "The ____ is my mother.", trans: "那位女人是我的母親。" },
-{ en: "Youth", cn: "青年", pos: "n.", sen: "Enjoy your ____ while you can.", trans: "趁年輕時好好享受青春。" },
-{ en: "Heavy", cn: "重的", pos: "adj.", sen: "The box is too ____ for me to carry.", trans: "這個箱子太重了，我搬不動。" },
-],
+        'Level 1：人物': [{en:"Adult", cn:"成人", pos:"n.", sen:"A child should be with an ____.", trans:"小孩應該由成人陪同。"}, {en:"Angel", cn:"天使", pos:"n.", sen:"You look like a beautiful ____.", trans:"你看起來像個美麗的天使。"}, {en:"Baby", cn:"嬰兒", pos:"n.", sen:"The ____ is sleeping.", trans:"嬰兒正在睡覺。"}, {en:"Boy", cn:"男孩", pos:"n.", sen:"That ____ is my brother.", trans:"那個男孩是我弟弟。"}, {en:"Child", cn:"小孩", pos:"n.", sen:"Every ____ likes to play.", trans:"每個小孩都愛玩。"}],
         'Level 2：外貌': [{en:"Heavy", cn:"重的", pos:"adj.", sen:"The box is ____.", trans:"箱子很重。"}],
         'Level 3：身體器官': [{en:"Ear", cn:"耳朵", pos:"n.", sen:"We listen with our ____s.", trans:"我們用耳朵聽。"}],
         'Level 4：健康醫療': [{en:"Dizzy", cn:"頭暈的", pos:"adj.", sen:"I feel ____.", trans:"我覺得頭暈。"}],
@@ -219,8 +192,8 @@
         quizSet: [], quizIdx: 0, mode: ''
     };
 
-    let currentInputArr = []; // 存儲字母重組的選擇順序 {char, originIdx}
-    let poolLetters = []; // 存儲字母池狀態
+    let currentInputArr = []; 
+    let poolLetters = []; 
 
     async function verifyAccess() {
         if (document.getElementById('authCodeInput').value !== MY_PRIVATE_PASSWORD) return alert("密碼錯誤");
@@ -236,11 +209,11 @@
     }
 
     function saveLocal() { 
-        localStorage.setItem('catGame_V29', JSON.stringify(state)); 
+        localStorage.setItem('catGame_V30', JSON.stringify(state)); 
         fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(state) });
     }
     function loadLocal() {
-        const saved = localStorage.getItem('catGame_V29');
+        const saved = localStorage.getItem('catGame_V30');
         if (saved) state = JSON.parse(saved);
     }
 
@@ -263,7 +236,6 @@
         loadQuiz();
     }
 
-    // 格式化單字：首字大寫，其餘小寫
     function formatWord(w) {
         return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
     }
@@ -271,23 +243,28 @@
     function loadQuiz() {
         const q = state.quizSet[state.quizIdx];
         const formattedWord = formatWord(q.en);
+        
+        document.getElementById('progressIdx').innerText = state.quizIdx + 1;
+        document.getElementById('totalIdx').innerText = state.quizSet.length;
+        document.getElementById('qPos').innerText = q.pos;
         document.getElementById('qCn').innerText = q.cn;
         document.getElementById('qSentence').innerText = q.sen.replace('____', '______');
+        document.getElementById('qTrans').innerText = q.trans || "";
         document.getElementById('wordSlots').innerHTML = "";
-        document.getElementById('checkBtn').style.display = "block";
-        document.getElementById('nextBtn').style.display = "none";
         
         currentInputArr = [];
         const area = document.getElementById('inputArea'); area.innerHTML = "";
         
         if(state.mode === 'scramble') {
+            document.getElementById('quizModeLabel').innerText = "🧩 字母重組";
             poolLetters = formattedWord.split('').sort(() => Math.random() - 0.5);
             renderPool();
             for(let i=0; i<formattedWord.length; i++) {
                 document.getElementById('wordSlots').innerHTML += `<span class="word-slot" onclick="removeLetter(${i})"></span>`;
             }
-        } else {
-            area.innerHTML = `<input type="text" id="spellInput" style="width:80%; padding:10px; font-size:20px;" autofocus>`;
+        } else if(state.mode === 'sentence' || state.mode === 'spell') {
+            document.getElementById('quizModeLabel').innerText = state.mode === 'sentence' ? "📖 例句挑戰" : "✍️ 拼字練習";
+            area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="請輸入英文單字" autofocus onkeydown="if(event.key==='Enter') checkAnswer()">`;
         }
     }
 
@@ -313,7 +290,6 @@
         }
     }
 
-    // 重選功能：點擊空格退回字母
     function removeLetter(slotIdx) {
         if(currentInputArr[slotIdx]) {
             const item = currentInputArr.splice(slotIdx, 1)[0];
@@ -331,23 +307,24 @@
         if(state.mode === 'scramble') {
             currentInputArr.forEach(i => ans += i.char);
         } else {
-            ans = document.getElementById('spellInput').value;
+            ans = document.getElementById('spellInput').value.trim();
         }
 
         if(ans.toLowerCase() === q.en.toLowerCase()) {
             state.coins += 5;
-            alert("答對了！💰+5");
+            alert("太棒了！答對了 💰+5");
             nextQuestion();
         } else {
-            alert("答錯了！正確答案是: " + formatWord(q.en));
+            alert("答錯囉！正確答案是: " + formatWord(q.en));
             if(!state.wrongList.some(w => w.en === q.en)) state.wrongList.push(q);
+            nextQuestion();
         }
         updateUI(); saveLocal();
     }
 
     function nextQuestion() {
         state.quizIdx++;
-        if(state.quizIdx >= state.quizSet.length) { alert("關卡結束！"); goHome(); }
+        if(state.quizIdx >= state.quizSet.length) { alert("挑戰完成！"); goHome(); }
         else loadQuiz();
     }
 
@@ -358,6 +335,7 @@
         showScreen('gameScreen'); loadQuiz();
     }
 
+    // 商城、背包與貓咪互動函數 (保持不變)
     function renderShop(cat, btn) {
         if(btn) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
         const cont = document.getElementById('shop-content'); cont.innerHTML = "";
@@ -410,7 +388,7 @@
 
     function openToySelect() {
         const myToys = state.bag.filter(i => i.type === 'toy');
-        if(myToys.length === 0) return alert("還沒買玩具喔！");
+        if(myToys.length === 0) return alert("還沒買玩具喔！去商城看看吧。");
         const cont = document.getElementById('toyOptionList'); cont.innerHTML = "";
         myToys.forEach(t => cont.innerHTML += `<div onclick="useToy('${t.id}')" style="cursor:pointer; font-size:30px;">${t.icon}<br><small>${t.name}</small></div>`);
         document.getElementById('toySelectModal').style.display = 'block';
