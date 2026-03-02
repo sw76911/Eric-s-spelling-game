@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字貓大冒險 V30.0</title>
+    <title>單字貓大冒險 V32.0</title>
     <style>
         :root { 
             --primary: #4a90e2; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; --gold: #f1c40f; --pink: #ff85a1; 
@@ -18,7 +18,7 @@
         .screen { display: none; flex: 1; overflow-y: auto; padding: 10px; flex-direction: column; }
         .active { display: flex; }
 
-        /* 貓咪外觀元件 */
+        /* 貓咪外觀 */
         .cat-stage { width: 100%; height: 140px; position: relative; margin: 10px 0; display: flex; justify-content: center; align-items: flex-end; }
         .cat-container { position: absolute; bottom: 15px; width: calc(120px * var(--cat-scale)); height: calc(100px * var(--cat-scale)); animation: lazyWalk 20s infinite linear; }
         .cat-body, .cat-head { position: absolute; background: var(--cat-color); transition: 0.3s; }
@@ -27,7 +27,6 @@
         .layer-item { position: absolute; width: 100%; height: 100%; border-radius: inherit; display: none; z-index: 7; }
         .head-layer { width: 120%; height: 85%; top: -65%; left: -10%; z-index: 25; border-radius: 50% 50% 0 0; }
         .socks-layer { height: 60%; bottom: 0; z-index: 8; border-radius: 0 0 5px 5px; }
-        
         .cat-ear { position: absolute; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 18px solid var(--cat-color); top: -8px; z-index: 9; }
         .cat-ear.l { left: 12px; transform: rotate(-20deg); } .cat-ear.r { left: 40px; transform: rotate(20deg); }
         .cat-eye { position: absolute; width: 6px; height: 6px; background: #333; border-radius: 50%; top: 16px; animation: blink 4s infinite; }
@@ -39,21 +38,22 @@
         @keyframes tailWag { 0%, 100% { transform: rotate(15deg); } 50% { transform: rotate(40deg); } }
         @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0); } }
 
-        /* UI 元件 */
+        /* UI */
         .grid-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .item-card { border: 1px solid #ddd; padding: 12px; border-radius: 15px; cursor: pointer; background: white; transition: 0.1s; position: relative; }
-        .modal { display: none; position: fixed; top: 10%; left: 5%; width: 90%; height: 80%; background: white; z-index: 2000; border-radius: 25px; padding: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.3); overflow-y: auto; }
-        .word-slot { display: inline-block; min-width: 30px; border-bottom: 3px solid #333; margin: 0 5px; font-size: 24px; height: 35px; color: var(--primary); font-weight: bold; line-height: 35px; cursor: pointer; }
-        .letter-btn { display: inline-block; padding: 8px 14px; margin: 4px; background: white; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        .tab-btn { padding: 8px 15px; border: none; border-radius: 10px; background: #eee; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 10%; left: 5%; width: 90%; height: 75%; background: white; z-index: 2000; border-radius: 25px; padding: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.3); overflow-y: auto; }
+        .word-slot { display: inline-block; min-width: 25px; border-bottom: 3px solid #333; margin: 0 3px; font-size: 20px; height: 30px; color: var(--primary); font-weight: bold; line-height: 30px; cursor: pointer; }
+        .letter-btn { display: inline-block; padding: 6px 10px; margin: 3px; background: white; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .tab-btn { padding: 8px 12px; border: none; border-radius: 10px; background: #eee; cursor: pointer; font-size: 14px; }
         .tab-btn.active { background: var(--primary); color: white; }
+        .audio-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px; margin-left: 8px; }
     </style>
 </head>
 <body>
 
 <div id="lockOverlay">
     <h2 style="color:var(--primary);">🔒 私密同步空間</h2>
-    <input type="password" id="authCodeInput" class="lock-input" placeholder="請輸入進入密碼">
+    <input type="password" id="authCodeInput" class="lock-input" placeholder="請輸入密碼">
     <button onclick="verifyAccess()" style="width:80%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-size:18px;">同步進度並開始</button>
 </div>
 
@@ -81,9 +81,9 @@
     </div>
 
     <div id="levelScreen" class="screen">
-        <h3>選擇主題關卡</h3>
+        <h3 id="levelTitle">選擇主題關卡</h3>
         <div id="level-list" class="grid-list"></div>
-        <button onclick="goHome()" style="margin-top:20px; padding:10px;">返回</button>
+        <button onclick="goHome()" style="margin-top:20px; padding:10px; border-radius:10px; border:1px solid #ccc;">返回首頁</button>
     </div>
 
     <div id="gameScreen" class="screen">
@@ -93,14 +93,18 @@
         </div>
         <div style="background:#fff; padding:15px; border-radius:20px; margin:10px 0; border:2px solid #eee;">
             <div id="qPos" style="font-size:12px; color:var(--pink); font-weight:bold;">詞性</div>
-            <div id="qCn" style="color:var(--primary); font-weight:bold; font-size:22px;">單字中文</div>
+            <div id="qCn" style="color:var(--primary); font-weight:bold; font-size:22px;">
+                <span id="qCnText">單字中文</span>
+                <button id="wordVoiceBtn" class="audio-btn" onclick="speakWord()">🔊</button>
+            </div>
             <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
             <div id="qSentence" style="font-style:italic; color:#666; font-size:16px;">Sentence...</div>
             <div id="qTrans" style="color:#999; font-size:13px; margin-top:5px;">中文翻譯</div>
+            <button id="sentenceVoiceBtn" class="audio-btn" style="width:auto; border-radius:10px; padding:0 10px; margin-top:10px; font-size:12px;" onclick="speakSentence()">🔊 朗讀例句</button>
             <div id="wordSlots" style="margin-top:15px;"></div>
         </div>
         <div id="inputArea" style="min-height:100px;"></div>
-        <button id="checkBtn" onclick="checkAnswer()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px;">送出答案</button>
+        <button id="checkBtn" onclick="checkAnswer()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-size:18px; font-weight:bold;">送出答案</button>
     </div>
 
     <div id="catArea" style="background:#fff; border-top:4px solid var(--pink); padding:10px; margin-top:auto; margin-left:-20px; margin-right:-20px;">
@@ -134,8 +138,11 @@
 </div>
 
 <div id="shopModal" class="modal">
-    <h3>🛒 貓咪商城</h3>
-    <div id="shop-tabs" style="display:flex; gap:5px; margin-bottom:15px; overflow-x:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0;">🛒 貓咪商城</h3>
+        <button onclick="toggleModal('shopModal', false)" style="border:none; background:none; font-size:20px;">✖</button>
+    </div>
+    <div id="shop-tabs" style="display:flex; gap:5px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px;">
         <button class="tab-btn active" onclick="renderShop('daily', this)">日常</button>
         <button class="tab-btn" onclick="renderShop('toys', this)">玩具</button>
         <button class="tab-btn" onclick="renderShop('hats', this)">帽子</button>
@@ -143,26 +150,27 @@
         <button class="tab-btn" onclick="renderShop('socks', this)">襪子</button>
     </div>
     <div id="shop-content" class="grid-list"></div>
-    <button onclick="toggleModal('shopModal', false)" style="width:100%; margin-top:20px; padding:10px;">關閉</button>
 </div>
 
 <div id="bagModal" class="modal">
-    <h3>🎒 雲端背包</h3>
-    <div style="font-weight:bold; margin-bottom:10px; color:var(--primary);">🐱 免費換毛</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0;">🎒 雲端背包</h3>
+        <button onclick="toggleModal('bagModal', false)" style="border:none; background:none; font-size:20px;">✖</button>
+    </div>
+    <div style="font-weight:bold; margin-bottom:10px; color:var(--primary); text-align:left;">🐱 免費換毛</div>
     <div class="grid-list">
         <div class="item-card" onclick="changeSkin('#f39c12')">橘貓</div>
         <div class="item-card" onclick="changeSkin('#95a5a6')">灰貓</div>
         <div class="item-card" onclick="changeSkin('#34495e')">黑貓</div>
     </div>
-    <hr>
+    <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
     <div id="bag-content" class="grid-list"></div>
-    <button onclick="toggleModal('bagModal', false)" style="width:100%; margin-top:20px; padding:10px;">關閉</button>
 </div>
 
-<div id="toySelectModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; background:white; z-index:3000; border-radius:20px; padding:20px; box-shadow: 0 0 50px rgba(0,0,0,0.5); text-align:center;">
+<div id="toySelectModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; background:white; z-index:3000; border-radius:25px; padding:20px; box-shadow: 0 0 50px rgba(0,0,0,0.5); text-align:center;">
     <h4>🧸 選擇玩具</h4>
     <div id="toyOptionList" style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin:15px 0;"></div>
-    <button onclick="document.getElementById('toySelectModal').style.display='none'" style="padding:5px 15px;">取消</button>
+    <button onclick="document.getElementById('toySelectModal').style.display='none'" style="padding:8px 20px; border-radius:10px; border:1px solid #ccc;">取消</button>
 </div>
 
 <script>
@@ -170,11 +178,11 @@
     const MY_PRIVATE_PASSWORD = "0127";
 
     const themes = {
-        'Level 1：人物': [{en:"Adult", cn:"成人", pos:"n.", sen:"A child should be with an ____.", trans:"小孩應該由成人陪同。"}, {en:"Angel", cn:"天使", pos:"n.", sen:"You look like a beautiful ____.", trans:"你看起來像個美麗的天使。"}, {en:"Baby", cn:"嬰兒", pos:"n.", sen:"The ____ is sleeping.", trans:"嬰兒正在睡覺。"}, {en:"Boy", cn:"男孩", pos:"n.", sen:"That ____ is my brother.", trans:"那個男孩是我弟弟。"}, {en:"Child", cn:"小孩", pos:"n.", sen:"Every ____ likes to play.", trans:"每個小孩都愛玩。"}],
-        'Level 2：外貌': [{en:"Heavy", cn:"重的", pos:"adj.", sen:"The box is ____.", trans:"箱子很重。"}],
-        'Level 3：身體器官': [{en:"Ear", cn:"耳朵", pos:"n.", sen:"We listen with our ____s.", trans:"我們用耳朵聽。"}],
-        'Level 4：健康醫療': [{en:"Dizzy", cn:"頭暈的", pos:"adj.", sen:"I feel ____.", trans:"我覺得頭暈。"}],
-        'Level 5：家庭成員': [{en:"Granddaughter", cn:"孫女", pos:"n.", sen:"He loves his ____.", trans:"他愛他的孫女。"}]
+        'Level 1：人物': [{en:"Adult", cn:"成人", pos:"n.", sen:"A child should be with an adult.", trans:"小孩應該由成人陪同。"}, {en:"Angel", cn:"天使", pos:"n.", sen:"You look like a beautiful angel.", trans:"你看起來像個美麗的天使。"}, {en:"Baby", cn:"嬰兒", pos:"n.", sen:"The baby is sleeping.", trans:"嬰兒正在睡覺。"}, {en:"Boy", cn:"男孩", pos:"n.", sen:"That boy is my brother.", trans:"那個男孩是我弟弟。"}, {en:"Child", cn:"小孩", pos:"n.", sen:"Every child likes to play.", trans:"每個小孩都愛玩。"}],
+        'Level 2：外貌': [{en:"Heavy", cn:"重的", pos:"adj.", sen:"The box is heavy.", trans:"箱子很重。"}],
+        'Level 3：身體器官': [{en:"Ear", cn:"耳朵", pos:"n.", sen:"We listen with our ears.", trans:"我們用耳朵聽。"}],
+        'Level 4：健康醫療': [{en:"Dizzy", cn:"頭暈的", pos:"adj.", sen:"I feel dizzy.", trans:"我覺得頭暈。"}],
+        'Level 5：家庭成員': [{en:"Granddaughter", cn:"孫女", pos:"n.", sen:"He loves his granddaughter.", trans:"他愛他的孫女。"}]
     };
 
     const shopItems = {
@@ -192,150 +200,51 @@
         quizSet: [], quizIdx: 0, mode: ''
     };
 
-    let currentInputArr = []; 
-    let poolLetters = []; 
+    let currentInputArr = []; let poolLetters = []; 
 
-    async function verifyAccess() {
-        if (document.getElementById('authCodeInput').value !== MY_PRIVATE_PASSWORD) return alert("密碼錯誤");
-        const btn = document.querySelector('#lockOverlay button');
-        btn.innerText = "⏳ 雲端同步中..."; btn.disabled = true;
-        try {
-            const res = await fetch(GOOGLE_SCRIPT_URL);
-            const text = await res.text();
-            if (text && text !== "null" && text !== "Success") state = JSON.parse(text);
-        } catch (e) { loadLocal(); }
-        document.getElementById('lockOverlay').style.display = 'none';
-        updateUI(); renderShop('daily');
-    }
+    // 發音
+    function speakWord() { const q = state.quizSet[state.quizIdx]; const msg = new SpeechSynthesisUtterance(q.en); msg.lang = 'en-US'; window.speechSynthesis.speak(msg); }
+    function speakSentence() { const q = state.quizSet[state.quizIdx]; const msg = new SpeechSynthesisUtterance(q.sen); msg.lang = 'en-US'; window.speechSynthesis.speak(msg); }
 
-    function saveLocal() { 
-        localStorage.setItem('catGame_V30', JSON.stringify(state)); 
-        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(state) });
-    }
-    function loadLocal() {
-        const saved = localStorage.getItem('catGame_V30');
-        if (saved) state = JSON.parse(saved);
-    }
-
-    function manualSync() {
-        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(state) });
-        alert("已嘗試備份到雲端！");
-    }
-
-    function showLevelSelect(m) {
-        state.mode = m;
-        const list = document.getElementById('level-list'); list.innerHTML = "";
-        Object.keys(themes).forEach(t => { list.innerHTML += `<div class="item-card" onclick="startLevel('${t}')">🌟 ${t}</div>`; });
-        showScreen('levelScreen');
-    }
-
-    function startLevel(t) {
-        state.quizSet = [...themes[t]].sort(() => Math.random() - 0.5).slice(0, 15);
-        state.quizIdx = 0;
-        showScreen('gameScreen');
-        loadQuiz();
-    }
-
-    function formatWord(w) {
-        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-    }
-
+    // 遊戲核心
     function loadQuiz() {
         const q = state.quizSet[state.quizIdx];
         const formattedWord = formatWord(q.en);
-        
         document.getElementById('progressIdx').innerText = state.quizIdx + 1;
         document.getElementById('totalIdx').innerText = state.quizSet.length;
         document.getElementById('qPos').innerText = q.pos;
-        document.getElementById('qCn').innerText = q.cn;
-        document.getElementById('qSentence').innerText = q.sen.replace('____', '______');
+        
+        if (state.mode === 'sentence') {
+            document.getElementById('quizModeLabel').innerText = "📖 例句挑戰";
+            document.getElementById('qCnText').style.display = "none";
+            document.getElementById('wordVoiceBtn').style.display = "none";
+            document.getElementById('sentenceVoiceBtn').style.display = "inline-block";
+        } else {
+            document.getElementById('quizModeLabel').innerText = state.mode === 'scramble' ? "🧩 字母重組" : "✍️ 拼字練習";
+            document.getElementById('qCnText').innerText = q.cn;
+            document.getElementById('qCnText').style.display = "inline";
+            document.getElementById('wordVoiceBtn').style.display = "inline-block";
+            document.getElementById('sentenceVoiceBtn').style.display = "none";
+        }
+
+        const maskedSentence = q.sen.replace(new RegExp(q.en, 'gi'), '______');
+        document.getElementById('qSentence').innerText = maskedSentence;
         document.getElementById('qTrans').innerText = q.trans || "";
         document.getElementById('wordSlots').innerHTML = "";
-        
-        currentInputArr = [];
-        const area = document.getElementById('inputArea'); area.innerHTML = "";
+        currentInputArr = []; const area = document.getElementById('inputArea'); area.innerHTML = "";
         
         if(state.mode === 'scramble') {
-            document.getElementById('quizModeLabel').innerText = "🧩 字母重組";
             poolLetters = formattedWord.split('').sort(() => Math.random() - 0.5);
             renderPool();
             for(let i=0; i<formattedWord.length; i++) {
                 document.getElementById('wordSlots').innerHTML += `<span class="word-slot" onclick="removeLetter(${i})"></span>`;
             }
-        } else if(state.mode === 'sentence' || state.mode === 'spell') {
-            document.getElementById('quizModeLabel').innerText = state.mode === 'sentence' ? "📖 例句挑戰" : "✍️ 拼字練習";
-            area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="請輸入英文單字" autofocus onkeydown="if(event.key==='Enter') checkAnswer()">`;
-        }
-    }
-
-    function renderPool() {
-        const area = document.getElementById('inputArea'); area.innerHTML = "";
-        poolLetters.forEach((l, idx) => {
-            if(l !== null) {
-                area.innerHTML += `<button class="letter-btn" onclick="addLetter('${l}', ${idx})">${l}</button>`;
-            } else {
-                area.innerHTML += `<div class="letter-btn" style="opacity:0.2; cursor:default;">&nbsp;</div>`;
-            }
-        });
-    }
-
-    function addLetter(l, idx) {
-        const slots = document.querySelectorAll('.word-slot');
-        if(currentInputArr.length < poolLetters.length) {
-            currentInputArr.push({char: l, originIdx: idx});
-            poolLetters[idx] = null;
-            renderPool();
-            const lastIdx = currentInputArr.length - 1;
-            slots[lastIdx].innerText = l;
-        }
-    }
-
-    function removeLetter(slotIdx) {
-        if(currentInputArr[slotIdx]) {
-            const item = currentInputArr.splice(slotIdx, 1)[0];
-            poolLetters[item.originIdx] = item.char;
-            renderPool();
-            const slots = document.querySelectorAll('.word-slot');
-            slots.forEach(s => s.innerText = "");
-            currentInputArr.forEach((val, i) => slots[i].innerText = val.char);
-        }
-    }
-
-    function checkAnswer() {
-        const q = state.quizSet[state.quizIdx];
-        let ans = "";
-        if(state.mode === 'scramble') {
-            currentInputArr.forEach(i => ans += i.char);
         } else {
-            ans = document.getElementById('spellInput').value.trim();
+            area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="請輸入單字" autofocus onkeydown="if(event.key==='Enter') checkAnswer()">`;
         }
-
-        if(ans.toLowerCase() === q.en.toLowerCase()) {
-            state.coins += 5;
-            alert("太棒了！答對了 💰+5");
-            nextQuestion();
-        } else {
-            alert("答錯囉！正確答案是: " + formatWord(q.en));
-            if(!state.wrongList.some(w => w.en === q.en)) state.wrongList.push(q);
-            nextQuestion();
-        }
-        updateUI(); saveLocal();
     }
 
-    function nextQuestion() {
-        state.quizIdx++;
-        if(state.quizIdx >= state.quizSet.length) { alert("挑戰完成！"); goHome(); }
-        else loadQuiz();
-    }
-
-    function startReview() {
-        if(state.wrongList.length === 0) return alert("目前沒有錯題！");
-        state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5);
-        state.quizIdx = 0; state.mode = 'spell';
-        showScreen('gameScreen'); loadQuiz();
-    }
-
-    // 商城、背包與貓咪互動函數 (保持不變)
+    // 商城與背包渲染
     function renderShop(cat, btn) {
         if(btn) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
         const cont = document.getElementById('shop-content'); cont.innerHTML = "";
@@ -374,46 +283,38 @@
         });
         const bagCont = document.getElementById('bag-content'); bagCont.innerHTML = "";
         state.bag.forEach((i, idx) => {
-            if(i.type !== 'toy') bagCont.innerHTML += `<div class="item-card" onclick="toggleEquip(${idx})">${i.name}<br>${state.equipped[i.part] === i.style ? '✅ 穿著中' : '👕 換裝'}</div>`;
+            if(i.type !== 'toy') bagCont.innerHTML += `<div class="item-card" onclick="toggleEquip(${idx})">${i.name}<br>${state.equipped[i.part] === i.style ? '✅' : '👕'}</div>`;
             else bagCont.innerHTML += `<div class="item-card">🧸 ${i.name}</div>`;
         });
     }
 
-    function care(t) {
-        if(state.inventory[t] > 0) {
-            state[t === 'fish' ? 'hunger' : 'clean'] = Math.min(100, state[t === 'fish' ? 'hunger' : 'clean'] + 20);
-            state.inventory[t]--; updateUI(); saveLocal();
-        } else alert("道具不足");
+    // 系統函數
+    async function verifyAccess() {
+        if (document.getElementById('authCodeInput').value !== MY_PRIVATE_PASSWORD) return alert("密碼錯誤");
+        document.getElementById('lockOverlay').style.display = 'none';
+        loadLocal(); updateUI(); renderShop('daily');
     }
-
-    function openToySelect() {
-        const myToys = state.bag.filter(i => i.type === 'toy');
-        if(myToys.length === 0) return alert("還沒買玩具喔！去商城看看吧。");
-        const cont = document.getElementById('toyOptionList'); cont.innerHTML = "";
-        myToys.forEach(t => cont.innerHTML += `<div onclick="useToy('${t.id}')" style="cursor:pointer; font-size:30px;">${t.icon}<br><small>${t.name}</small></div>`);
-        document.getElementById('toySelectModal').style.display = 'block';
-    }
-
-    function useToy(id) {
-        const toy = state.bag.find(i => i.id === id);
-        document.getElementById('toySelectModal').style.display = 'none';
-        const disp = document.getElementById('toyDisplay');
-        disp.innerText = toy.icon; disp.style.display = 'block';
-        state.mood = Math.min(100, state.mood + 20);
-        setTimeout(() => disp.style.display = 'none', 3000);
-        updateUI(); saveLocal();
-    }
-
-    function changeSkin(c) { state.equipped.color = c; updateUI(); saveLocal(); }
+    function formatWord(w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); }
+    function showLevelSelect(m) { state.mode = m; const list = document.getElementById('level-list'); list.innerHTML = ""; Object.keys(themes).forEach(t => { list.innerHTML += `<div class="item-card" onclick="startLevel('${t}')">🌟 ${t}</div>`; }); showScreen('levelScreen'); }
+    function startLevel(t) { state.quizSet = [...themes[t]].sort(() => Math.random() - 0.5).slice(0, 15); state.quizIdx = 0; showScreen('gameScreen'); loadQuiz(); }
+    function renderPool() { const area = document.getElementById('inputArea'); area.innerHTML = ""; poolLetters.forEach((l, idx) => { if(l !== null) area.innerHTML += `<button class="letter-btn" onclick="addLetter('${l}', ${idx})">${l}</button>`; else area.innerHTML += `<div class="letter-btn" style="opacity:0.2; cursor:default;">&nbsp;</div>`; }); }
+    function addLetter(l, idx) { const slots = document.querySelectorAll('.word-slot'); if(currentInputArr.length < poolLetters.length) { currentInputArr.push({char: l, originIdx: idx}); poolLetters[idx] = null; renderPool(); const lastIdx = currentInputArr.length - 1; slots[lastIdx].innerText = l; } }
+    function removeLetter(slotIdx) { if(currentInputArr[slotIdx]) { const item = currentInputArr.splice(slotIdx, 1)[0]; poolLetters[item.originIdx] = item.char; renderPool(); const slots = document.querySelectorAll('.word-slot'); slots.forEach(s => s.innerText = ""); currentInputArr.forEach((val, i) => slots[i].innerText = val.char); } }
+    function checkAnswer() { const q = state.quizSet[state.quizIdx]; let ans = state.mode === 'scramble' ? currentInputArr.map(i=>i.char).join('') : document.getElementById('spellInput').value.trim(); if(ans.toLowerCase() === q.en.toLowerCase()) { state.coins += 5; alert("答對了！💰+5"); nextQuestion(); } else { alert("答錯了！正確答案是: " + formatWord(q.en)); if(!state.wrongList.some(w => w.en === q.en)) state.wrongList.push(q); nextQuestion(); } updateUI(); saveLocal(); }
+    function nextQuestion() { state.quizIdx++; if(state.quizIdx >= state.quizSet.length) { alert("挑戰完成！"); goHome(); } else loadQuiz(); }
+    function startReview() { if(state.wrongList.length === 0) return alert("目前沒有錯題！"); state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5); state.quizIdx = 0; state.mode = 'spell'; showScreen('gameScreen'); loadQuiz(); }
     function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     function goHome() { showScreen('lobbyScreen'); updateUI(); }
     function toggleModal(id, s) { document.getElementById(id).style.display = s?'block':'none'; }
-    function toggleEquip(idx) {
-        const i = state.bag[idx];
-        state.equipped[i.part] = (state.equipped[i.part] === i.style) ? null : i.style;
-        updateUI(); saveLocal();
-    }
+    function care(t) { if(state.inventory[t] > 0) { state[t === 'fish' ? 'hunger' : 'clean'] = Math.min(100, state[t === 'fish' ? 'hunger' : 'clean'] + 20); state.inventory[t]--; updateUI(); saveLocal(); } else alert("道具不足"); }
+    function openToySelect() { const myToys = state.bag.filter(i => i.type === 'toy'); if(myToys.length === 0) return alert("還沒買玩具喔！"); const cont = document.getElementById('toyOptionList'); cont.innerHTML = ""; myToys.forEach(t => cont.innerHTML += `<div onclick="useToy('${t.id}')" style="cursor:pointer; font-size:30px;">${t.icon}<br><small>${t.name}</small></div>`); document.getElementById('toySelectModal').style.display = 'block'; }
+    function useToy(id) { const toy = state.bag.find(i => i.id === id); document.getElementById('toySelectModal').style.display = 'none'; const disp = document.getElementById('toyDisplay'); disp.innerText = toy.icon; disp.style.display = 'block'; state.mood = Math.min(100, state.mood + 20); setTimeout(() => disp.style.display = 'none', 3000); updateUI(); saveLocal(); }
+    function changeSkin(c) { state.equipped.color = c; updateUI(); saveLocal(); }
+    function toggleEquip(idx) { const i = state.bag[idx]; state.equipped[i.part] = (state.equipped[i.part] === i.style) ? null : i.style; updateUI(); saveLocal(); }
     function renameCat() { const n = prompt("取名：", state.catName); if(n) { state.catName = n; updateUI(); saveLocal(); } }
+    function saveLocal() { localStorage.setItem('catGame_V32', JSON.stringify(state)); if(GOOGLE_SCRIPT_URL.startsWith("http")) fetch(GOOGLE_SCRIPT_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(state)}); }
+    function loadLocal() { const saved = localStorage.getItem('catGame_V32'); if(saved) state = JSON.parse(saved); }
+    function manualSync() { if(GOOGLE_SCRIPT_URL.startsWith("http")) fetch(GOOGLE_SCRIPT_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(state)}); alert("備份完成！"); }
 </script>
 </body>
 </html>
