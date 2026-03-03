@@ -174,12 +174,11 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "你的網址"; 
-    const MY_PRIVATE_PASSWORD = "你的密碼";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOiL-ScKXeJQSi4kFw8o5zUWSXjtSdJlQfkZlc7mZxhNgcgmuXCppJejFamm1pxF98/exec"; 
+    const MY_PRIVATE_PASSWORD = "0127";
 
     const themes = {
-        'Level 1：人物': [{en:"Adult", cn:"成人", pos:"n.", sen:"A child should be with an adult.", trans:"小孩應該由成人陪同。"}, {en:"Angel", cn:"天使", pos:"n.", sen:"You look like a beautiful angel.", trans:"你看起來像個美麗的天使。"}, {en:"Baby", cn:"嬰兒", pos:"n.", sen:"The baby is sleeping.", trans:"嬰兒正在睡覺。"}, {en:"Boy", cn:"男孩", pos:"n.", sen:"That boy is my brother.", trans:"那個男孩是我弟弟。"}, {en:"Child", cn:"小孩", pos:"n.", sen:"Every child likes to play.", trans:"每個小孩都愛玩。"},{ en: "Couple", cn: "情侶、夫妻", pos: "n.", sen: "They are a very happy ____.", trans: "他們是一對非常幸福的夫妻。" },
-{ en: "Customer", cn: "顧客", pos: "n.", sen: "The ____ is buying food in the shop.", trans: "顧客正在商店裡買食物。" },
+        'Level 1：人物': [{en:"Adult", cn:"成人", pos:"n.", sen:"A child should be with an adult.", trans:"小孩應該由成人陪同。"}, {en:"Angel", cn:"天使", pos:"n.", sen:"You look like a beautiful angel.", trans:"你看起來像個美麗的天使。"}, {en:"Baby", cn:"嬰兒", pos:"n.", sen:"The baby is sleeping.", trans:"嬰兒正在睡覺。"}, {en:"Boy", cn:"男孩", pos:"n.", sen:"That boy is my brother.", trans:"那個男孩是我弟弟。"}, {en:"Child", cn:"小孩", pos:"n.", sen:"Every child likes to play.", trans:"每個小孩都愛玩。"},{ en: "Customer", cn: "顧客", pos: "n.", sen: "The ____ is buying food in the shop.", trans: "顧客正在商店裡買食物。" },
 { en: "Fool", cn: "呆子", pos: "n.", sen: "Don't be a ____; think before you act.", trans: "別當呆子，三思而後行。" },
 { en: "Genius", cn: "天才", pos: "n.", sen: "Einstein was a great ____.", trans: "愛因斯坦是一位偉大的天才。" },
 { en: "Gentleman", cn: "紳士", pos: "n.", sen: "He is a kind and polite ____.", trans: "他是一位善良且有禮貌的紳士。" },
@@ -207,7 +206,7 @@
 { en: "Visitor", cn: "訪客", pos: "n.", sen: "There are many ____s in the museum.", trans: "博物館裡有很多訪客。" },
 { en: "Woman", cn: "女人", pos: "n.", sen: "The ____ is my mother.", trans: "那位女人是我的母親。" },
 { en: "Youth", cn: "青年", pos: "n.", sen: "Enjoy your ____ while you can.", trans: "趁年輕時好好享受青春。" },
-{ en: "Heavy", cn: "重的", pos: "adj.", sen: "The box is too ____ for me to carry.", trans: "這個箱子太重了，我搬不動。" },
+{ en: "Couple", cn: "情侶、夫妻", pos: "n.", sen: "They are a very happy ____.", trans: "他們是一對非常幸福的夫妻。" },
 ],
         'Level 2：外貌': [{en:"Heavy", cn:"重的", pos:"adj.", sen:"The box is heavy.", trans:"箱子很重。"},{ en: "Heavy", cn: "重的", pos: "adj.", sen: "The box is too ____ for me to carry.", trans: "這個箱子太重了，我搬不動。" },
 { en: "Nice-looking", cn: "好看的", pos: "adj.", sen: "He is a ____ young man.", trans: "他是個長相好看的年輕人。" },
@@ -296,12 +295,12 @@
 { en: "Cute", cn: "可愛的", pos: "adj.", sen: "Look at that ____ little puppy!", trans: "看那隻可愛的小狗！" },
 { en: "Deaf", cn: "聾的", pos: "adj.", sen: "He uses sign language because he is ____.", trans: "因為他是聾子，所以使用手語。" },
 { en: "Dumb", cn: "啞的", pos: "adj.", sen: "The ____ boy expressed himself by drawing.", trans: "那個啞巴男孩透過畫畫來表達自己。" },
-{ en: "Fat", cn: "胖的", pos: "adj.", sen: "The cat became ____ because it ate too much.", trans: "這隻貓因為吃太多變胖了。" },
-{ en: "Beard", cn: "鬍子", pos: "n.", sen: "My father has a long black ____.", trans: "我父親留著長長的黑鬍子。" },
+{ en: "Fat", cn: "胖的", pos: "adj.", sen: "The cat became ____ because it ate too much.", trans: "這隻貓因為吃太多變胖了。" }
 ],
         'Level 3：身體器官': [{en:"Ear", cn:"耳朵", pos:"n.", sen:"We listen with our ears.", trans:"我們用耳朵聽。"}],
         'Level 4：健康醫療': [{en:"Dizzy", cn:"頭暈的", pos:"adj.", sen:"I feel dizzy.", trans:"我覺得頭暈。"}],
         'Level 5：家庭成員': [{en:"Granddaughter", cn:"孫女", pos:"n.", sen:"He loves his granddaughter.", trans:"他愛他的孫女。"}]
+        'Level 6：稱呼': [{ en: "Marry", cn: "結婚", pos: "v.", sen: "Will you ____ me?", trans: "你願意嫁給/娶我嗎？" }]
     };
 
     const shopItems = {
