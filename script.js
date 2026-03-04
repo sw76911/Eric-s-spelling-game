@@ -214,10 +214,17 @@ function checkAnswer() {
 
     state.quizIdx++;
 
+    // 判斷是否完成所有題目
     if (state.quizIdx >= state.quizSet.length) {
+        saveLocal(); 
+        updateUI();
+        alert("挑戰完成！");
         goHome();
     } else {
         loadQuiz();
+        saveLocal(); // ✨ 每一題結束都存檔
+        updateUI();  // ✨ 更新畫面
+    }
 }
 // --- 5. 貓咪照顧與背包功能 ---
 function care(type) {
