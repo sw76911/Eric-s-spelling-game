@@ -213,15 +213,31 @@ function renderShop(cat, btn) {
     const cont = document.getElementById('shop-content');
     cont.innerHTML = "";
     if (!shopItems[cat]) return;
-    const isOwned = state.bag.some(owned => owned.id === key);
-    const btnText = isOwned ? "已擁有" : `${item.price} 💰`;
-    const btnStyle = isOwned ? "background:#ccc; cursor:default;" : "";
     
     shopItems[cat].forEach(i => {
+        // --- 核心邏輯：檢查是否已經擁有 ---
+        // 如果是消耗品 (fish, soap)，永遠顯示價格。如果是衣服或玩具，檢查背包。
+        const isPermanent = (cat !== 'daily'); // 除了 daily (魚、肥皂) 以外都是永久品
+        const isOwned = isPermanent && state.bag.some(owned => owned.id === i.id);
+
         const itemDiv = document.createElement('div');
         itemDiv.className = "item-card";
-        itemDiv.innerHTML = `${i.name}<br>💰${i.price}`;
-        itemDiv.onclick = () => buyItem(cat, i.id);
+        
+        // 根據是否擁有，決定按鈕的樣式與內容
+        const displayPrice = isOwned ? "已擁有" : `💰 ${i.price}`;
+        const clickAction = isOwned ? "alert('你已經買過這個囉！')" : `buyItem('${cat}', '${i.id}')`;
+        const opacityStyle = isOwned ? "opacity: 0.6; cursor: default;" : "cursor: pointer;";
+
+        itemDiv.innerHTML = `
+            <div style="font-size:30px; margin-bottom:5px;">${i.icon || '👕'}</div>
+            <div style="font-weight:bold;">${i.name}</div>
+            <button 
+                onclick="${clickAction}" 
+                style="margin-top:10px; padding:5px 10px; border-radius:10px; border:none; background:var(--primary); color:white; ${opacityStyle}">
+                ${displayPrice}
+            </button>
+        `;
+        
         cont.appendChild(itemDiv);
     });
 }
