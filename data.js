@@ -1,7 +1,7 @@
 // data.js
 const themes = {
     'Level 1：人物': [
-        { en: "Adult", cn: "成人", pos: "n.", sen: "An adult needs to drive the car.", trans: "小孩應該由成人陪同。" },
+{ en: "Adult", cn: "成人", pos: "n.", sen: "An adult needs to drive the car.", trans: "小孩應該由成人陪同。" },
 { en: "Angel", cn: "天使", pos: "n.", sen: "The little girl looks like an angel.", trans: "你看起來像個美麗的天使。" },
 { en: "Baby", cn: "嬰兒、寶貝", pos: "n.", sen: "The baby is sleeping now.", trans: "嬰兒正在床上睡覺。" },
 { en: "Boy", cn: "男孩", pos: "n.", sen: "That boy is my classmate.", trans: "那個男孩是我的弟弟。" },
