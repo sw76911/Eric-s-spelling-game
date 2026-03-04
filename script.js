@@ -181,7 +181,6 @@ function loadQuiz() {
         area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="輸入單字" onkeydown="if(event.key==='Enter') checkAnswer()">`;
     }
 }
-
 function checkAnswer() {
     const q = state.quizSet[state.quizIdx];
     let ans = (state.mode === 'scramble') 
@@ -190,13 +189,12 @@ function checkAnswer() {
     
     if (ans.toLowerCase() === q.en.toLowerCase()) {
         state.coins += 5;
-        state.mood = Math.min(100, state.mood + 1); // 答對心情加 1
+        state.mood = Math.min(100, state.mood + 1); 
         alert("答對了！💰+5");
     } else {
         alert("答錯了！答案是: " + q.en);
         if(!state.wrongList.some(w => w.en === q.en)) state.wrongList.push(q);
         
-        // 📉 答錯一題心情下降 5%
         state.mood = Math.max(0, state.mood - 5);
         console.log("答錯！目前心情:", state.mood);
     }
@@ -204,20 +202,18 @@ function checkAnswer() {
     state.quizIdx++;
 
     if (state.quizIdx >= state.quizSet.length) {
-        // 📉 闖關結束，強制扣減
         state.hunger = Math.max(0, state.hunger - 5);
         state.clean = Math.max(0, state.clean - 5);
         
         console.log("關卡結束！扣除後飽食度:", state.hunger, "清潔度:", state.clean);
         
-        // 先存檔，再彈窗，最後回首頁
         saveLocal();
         updateUI(); 
         alert("挑戰完成！貓咪變得有點餓也變髒了一點喔。");
         goHome();
     } else {
         loadQuiz();
-        saveLocal(); // 每一題結束都存檔，確保心情下降有被紀錄
+        saveLocal(); 
         updateUI();
     }
 }
