@@ -212,78 +212,76 @@ function renderShop(cat, btn) {
     }
     const cont = document.getElementById('shop-content');
     cont.innerHTML = "";
+    
+    // 注意：這裡要對應你 data.js 裡的資料結構 (假設是 shopItems)
     if (!shopItems[cat]) return;
     
     shopItems[cat].forEach(i => {
-        // --- 核心邏輯：檢查是否已經擁有 ---
-        // 如果是消耗品 (fish, soap)，永遠顯示價格。如果是衣服或玩具，檢查背包。
-        const isPermanent = (cat !== 'daily'); // 除了 daily (魚、肥皂) 以外都是永久品
+        const isPermanent = (cat !== 'daily'); 
         const isOwned = isPermanent && state.bag.some(owned => owned.id === i.id);
 
         const itemDiv = document.createElement('div');
         itemDiv.className = "item-card";
         
-        // 根據是否擁有，決定按鈕的樣式與內容
         const displayPrice = isOwned ? "已擁有" : `💰 ${i.price}`;
+        // 修正：確保呼叫時傳入兩個參數
         const clickAction = isOwned ? "alert('你已經買過這個囉！')" : `buyItem('${cat}', '${i.id}')`;
         const opacityStyle = isOwned ? "opacity: 0.6; cursor: default;" : "cursor: pointer;";
+        const btnBg = isOwned ? "#ccc" : "var(--primary)";
 
         itemDiv.innerHTML = `
             <div style="font-size:30px; margin-bottom:5px;">${i.icon || '👕'}</div>
             <div style="font-weight:bold;">${i.name}</div>
             <button 
                 onclick="${clickAction}" 
-                style="margin-top:10px; padding:5px 10px; border-radius:10px; border:none; background:var(--primary); color:white; ${opacityStyle}">
+                style="margin-top:10px; padding:5px 10px; border-radius:10px; border:none; background:${btnBg}; color:white; ${opacityStyle}">
                 ${displayPrice}
             </button>
         `;
-        
         cont.appendChild(itemDiv);
     });
 }
 
-function buyItem(itemKey) {
-    const item = shopData[itemKey];
+function buyItem(cat, id) {
+    // 從資料庫中找出該物品
+    const item = shopItems[cat].find(x => x.id === id);
     if (!item) return;
 
-    // 1. 檢查是否為「永久性道具」（衣服、背景、玩具）
-    // 消耗性道具（如：魚 🐟、肥皂 🧼）可以重複購買，所以排除在外
-    const permanentTypes = ['clothes', 'bg', 'toy'];
-    
-    if (permanentTypes.includes(item.type)) {
-        // 檢查背包 (state.bag) 裡是否已經有這個道具的 ID
-        const alreadyOwned = state.bag.some(owned => owned.id === itemKey);
-        
+    // 1. 檢查是否重複購買
+    const permanentTypes = ['clothes', 'hats', 'socks', 'toys', 'bg']; // 包含你所有的分類
+    if (cat !== 'daily') {
+        const alreadyOwned = state.bag.some(owned => owned.id === id);
         if (alreadyOwned) {
-            alert(`📢 提醒：你已經擁有「${item.name}」囉！不需要重複購買。`);
-            return; // 直接中斷函數，不扣錢
+            alert(`📢 提醒：你已經擁有「${item.name}」囉！`);
+            return; 
         }
     }
 
-    // 2. 檢查金幣是否足夠
+    // 2. 檢查金幣
     if (state.coins >= item.price) {
         state.coins -= item.price;
         
-        // 3. 根據種類加入背包或增加數量
-        if (item.type === 'food') {
-            state.inventory.fish = (state.inventory.fish || 0) + 1;
-        } else if (item.type === 'clean') {
-            state.inventory.soap = (state.inventory.soap || 0) + 1;
+        // 3. 根據種類加入背包
+        if (cat === 'daily') {
+            if (item.type === 'food') state.inventory.fish++;
+            if (item.type === 'clean') state.inventory.soap++;
         } else {
-            // 衣服或玩具，存入背包陣列
             state.bag.push({
-                id: itemKey,
+                id: id,
                 name: item.name,
                 type: item.type,
-                img: item.img
+                icon: item.icon
             });
         }
         
         alert(`成功購買 ${item.name}！`);
         updateUI();
-        saveLocal(); // 記得儲存進度（現在是加密存檔了）
+        saveLocal();
+        
+        // 重要：買完立刻重刷商店頁面，按鈕才會變灰色的「已擁有」
+        renderShop(cat); 
     } else {
-        alert("金幣不足喔！加油多答對幾題吧！");
+        alert("金幣不足喔！");
     }
 }
 
