@@ -133,10 +133,23 @@ function renderLevelSelect() {
 }
 
 function startLevel(levelKey) {
+    // 1. 📉 執行扣除邏輯：每闖關一次，飽食度與清潔度各下降 5%
+    state.hunger = Math.max(0, state.hunger - 5);
+    state.clean = Math.max(0, state.clean - 5);
+
+    // 2. 準備題目資料
     state.quizSet = [...themes[levelKey]].sort(() => Math.random() - 0.5).slice(0, 15);
     state.quizIdx = 0;
+    
+    // 3. 切換顯示螢幕
     document.getElementById('levelScreen').style.display = 'none';
     document.getElementById('gameScreen').style.display = 'block';
+
+    // 4. ✨ 關鍵：執行存檔與更新 UI，否則畫面上的數字不會變
+    saveLocal(); 
+    updateUI(); 
+    
+    // 5. 載入第一題
     loadQuiz();
 }
 
@@ -202,20 +215,9 @@ function checkAnswer() {
     state.quizIdx++;
 
     if (state.quizIdx >= state.quizSet.length) {
-        state.hunger = Math.max(0, state.hunger - 5);
-        state.clean = Math.max(0, state.clean - 5);
-        
-        console.log("關卡結束！扣除後飽食度:", state.hunger, "清潔度:", state.clean);
-        
-        saveLocal();
-        updateUI(); 
-        alert("挑戰完成！貓咪變得有點餓也變髒了一點喔。");
         goHome();
     } else {
         loadQuiz();
-        saveLocal(); 
-        updateUI();
-    }
 }
 // --- 5. 貓咪照顧與背包功能 ---
 function care(type) {
