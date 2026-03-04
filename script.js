@@ -223,21 +223,48 @@ function renderShop(cat, btn) {
     });
 }
 
-function buyItem(cat, id) {
-    const i = shopItems[cat].find(x => x.id === id);
-    if (state.coins >= i.price) {
-        state.coins -= i.price;
-        if (cat === 'daily') {
-            state.inventory[i.type]++;
-        } else {
-            state.bag.push({...i});
+function buyItem(itemKey) {
+    const item = shopData[itemKey];
+    if (!item) return;
+
+    // 1. 檢查是否為「永久性道具」（衣服、背景、玩具）
+    // 消耗性道具（如：魚 🐟、肥皂 🧼）可以重複購買，所以排除在外
+    const permanentTypes = ['clothes', 'bg', 'toy'];
+    
+    if (permanentTypes.includes(item.type)) {
+        // 檢查背包 (state.bag) 裡是否已經有這個道具的 ID
+        const alreadyOwned = state.bag.some(owned => owned.id === itemKey);
+        
+        if (alreadyOwned) {
+            alert(`📢 提醒：你已經擁有「${item.name}」囉！不需要重複購買。`);
+            return; // 直接中斷函數，不扣錢
         }
-        alert(`購買 ${i.name} 成功！`);
+    }
+
+    // 2. 檢查金幣是否足夠
+    if (state.coins >= item.price) {
+        state.coins -= item.price;
+        
+        // 3. 根據種類加入背包或增加數量
+        if (item.type === 'food') {
+            state.inventory.fish = (state.inventory.fish || 0) + 1;
+        } else if (item.type === 'clean') {
+            state.inventory.soap = (state.inventory.soap || 0) + 1;
+        } else {
+            // 衣服或玩具，存入背包陣列
+            state.bag.push({
+                id: itemKey,
+                name: item.name,
+                type: item.type,
+                img: item.img
+            });
+        }
+        
+        alert(`成功購買 ${item.name}！`);
         updateUI();
-        saveLocal();
-        renderShop(cat); // 刷新商城顯示
+        saveLocal(); // 記得儲存進度（現在是加密存檔了）
     } else {
-        alert("金幣不足！多去挑戰單字賺錢吧！");
+        alert("金幣不足喔！加油多答對幾題吧！");
     }
 }
 
