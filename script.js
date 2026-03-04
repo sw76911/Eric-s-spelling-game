@@ -194,13 +194,23 @@ function checkAnswer() {
     } else {
         alert("答錯了！答案是: " + q.en);
         if(!state.wrongList.some(w => w.en === q.en)) state.wrongList.push(q);
+// 📉 關鍵修正：答錯一題心情下降 5%
+        state.mood = Math.max(0, state.mood - 5);
     }
     state.quizIdx++;
     if (state.quizIdx >= state.quizSet.length) {
-        alert("挑戰完成！");
+       // 📉 關鍵修正：每闖關一次，飽食度與清潔度各下降 5%
+        state.hunger = Math.max(0, state.hunger - 5);
+        state.clean = Math.max(0, state.clean - 5);
+        
+        alert("挑戰完成！貓咪變得有點餓也變髒了一點喔。");
         goHome();
-    } else { loadQuiz(); }
-    saveLocal(); updateUI();
+    } else {
+        loadQuiz();
+    }
+    
+    saveLocal();  // 儲存狀態
+    updateUI();   // 更新畫面上的數值
 }
 
 // --- 5. 貓咪照顧與背包功能 ---
