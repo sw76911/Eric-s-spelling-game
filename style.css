@@ -67,3 +67,9 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
     background: #ffab91; /* 貓咪肉球色 */
     border-radius: 10px;
 }
+/* 讓返回首頁按鈕永遠在列表下方居中 */
+button[onclick="goHome()"] {
+    display: block;
+    margin: 20px auto 0;           /* 自動左右置中 */
+    width: 150px;                  /* 固定寬度更美觀 */
+}
