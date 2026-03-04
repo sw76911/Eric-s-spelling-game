@@ -1,4 +1,11 @@
-// 請將下方兩個變數修改為你自己的值
+function renderLevelSelect() {
+    console.log("正在執行渲染函數..."); // 新增這一行
+    const list = document.getElementById('level-list');
+    if (!list) {
+        console.log("找不到 id 為 level-list 的元素！");
+        return;
+    }
+    // 請將下方兩個變數修改為你自己的值
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOiL-ScKXeJQSi4kFw8o5zUWSXjtSdJlQfkZlc7mZxhNgcgmuXCppJejFamm1pxF98/exec"; 
 const MY_PRIVATE_PASSWORD = "0127"; 
 
