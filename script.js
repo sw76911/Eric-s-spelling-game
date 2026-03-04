@@ -95,7 +95,10 @@ function renderPool() { const area = document.getElementById('inputArea'); area.
 function addLetter(l, idx) { const slots = document.querySelectorAll('.word-slot'); if(currentInputArr.length < poolLetters.length) { currentInputArr.push({char: l, originIdx: idx}); poolLetters[idx] = null; renderPool(); const lastIdx = currentInputArr.length - 1; slots[lastIdx].innerText = l; } }
 function removeLetter(slotIdx) { if(currentInputArr[slotIdx]) { const item = currentInputArr.splice(slotIdx, 1)[0]; poolLetters[item.originIdx] = item.char; renderPool(); const slots = document.querySelectorAll('.word-slot'); slots.forEach(s => s.innerText = ""); currentInputArr.forEach((val, i) => slots[i].innerText = val.char); } }
 function startReview() { if(state.wrongList.length === 0) return alert("沒有錯題！"); state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5).slice(0, 15); state.quizIdx = 0; state.mode = 'spell'; showScreen('gameScreen'); loadQuiz(); }
-function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }if (Id === 'levelSelectScreen') {
+        renderLevelSelect();
+    }
+}
 function renderLevelSelect() {
     const list = document.getElementById('level-list');
     if (!list) return; // 安全檢查：如果找不到容器就停止
