@@ -96,6 +96,43 @@ function addLetter(l, idx) { const slots = document.querySelectorAll('.word-slot
 function removeLetter(slotIdx) { if(currentInputArr[slotIdx]) { const item = currentInputArr.splice(slotIdx, 1)[0]; poolLetters[item.originIdx] = item.char; renderPool(); const slots = document.querySelectorAll('.word-slot'); slots.forEach(s => s.innerText = ""); currentInputArr.forEach((val, i) => slots[i].innerText = val.char); } }
 function startReview() { if(state.wrongList.length === 0) return alert("沒有錯題！"); state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5).slice(0, 15); state.quizIdx = 0; state.mode = 'spell'; showScreen('gameScreen'); loadQuiz(); }
 function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function renderLevelSelect() {
+    const list = document.getElementById('level-list');
+    if (!list) return; // 安全檢查：如果找不到容器就停止
+
+    list.innerHTML = ""; // 先清空目前的列表，避免重複產生
+
+    // Object.keys(themes) 會抓出 Level 1, Level 2... 到 Level 30
+    Object.keys(themes).forEach(t => {
+        const btn = document.createElement('button');
+        
+        // 設定按鈕的樣式與文字
+        btn.innerText = t;
+        btn.style.padding = "15px 10px";
+        btn.style.borderRadius = "12px";
+        btn.style.border = "1px solid #ffccbc";
+        btn.style.backgroundColor = "#fff";
+        btn.style.cursor = "pointer";
+        btn.style.fontSize = "16px";
+        btn.style.transition = "all 0.2s";
+
+        // 滑鼠移入效果
+        btn.onmouseover = () => btn.style.backgroundColor = "#fff3e0";
+        btn.onmouseout = () => btn.style.backgroundColor = "#fff";
+
+        // 點擊按鈕開始該關卡
+        btn.onclick = () => {
+            // 檢查貓咪狀態是否太累 (選配邏輯)
+            if (state.hunger <= 10 || state.clean <= 10) {
+                alert("貓咪太累或太餓了，先照顧牠吧！");
+                return;
+            }
+            startLevel(t); 
+        };
+
+        list.appendChild(btn);
+    });
+}
 function goHome() { showScreen('lobbyScreen'); updateUI(); }
 function toggleModal(id, s) { document.getElementById(id).style.display = s?'block':'none'; }
 function renderShop(cat, btn) { if(btn) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); } const cont = document.getElementById('shop-content'); cont.innerHTML = ""; shopItems[cat].forEach(i => { cont.innerHTML += `<div class="item-card" onclick="buyItem('${cat}','${i.id}')">${i.name}<br>💰${i.price}</div>`; }); }
@@ -127,3 +164,29 @@ function renameCat() { const n = prompt("取名：", state.catName); if(n) { sta
 function saveLocal() { localStorage.setItem('catGame_V35', JSON.stringify(state)); if(GOOGLE_SCRIPT_URL.startsWith("http")) fetch(GOOGLE_SCRIPT_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(state)}); }
 function loadLocal() { const saved = localStorage.getItem('catGame_V35'); if(saved) state = JSON.parse(saved); }
 function manualSync() { if(GOOGLE_SCRIPT_URL.startsWith("http")) fetch(GOOGLE_SCRIPT_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(state)}); alert("同步完成！"); }
+// 假設這是你切換畫面的函數
+function goToLevelSelect() {
+    showScreen('levelSelectScreen'); // 切換到關卡選擇畫面
+    renderLevelSelect();             // 關鍵：切換後立刻把 30 個按鈕畫出來
+
+
+    function startLevel(t) {
+    // 1. 扣除貓咪狀態
+    state.hunger = Math.max(0, state.hunger - 5);
+    state.clean = Math.max(0, state.clean - 5);
+
+    // 2. 從 themes 抓取該關卡的題庫
+    let allQuestions = [...themes[t]];
+    
+    // 3. 隨機選題 (如果該關卡少於 15 題就取全部，多於 15 題就取 15 題)
+    const numToPick = Math.min(allQuestions.length, 15);
+    state.quizSet = allQuestions.sort(() => Math.random() - 0.5).slice(0, numToPick);
+    
+    state.currentLevelName = t; // 記錄當前關卡名稱
+    state.quizIdx = 0;
+    
+    showScreen('gameScreen'); // 跳轉到遊戲畫面
+    loadQuiz();               // 載入第一題
+    updateUI();
+}
+}
