@@ -284,7 +284,12 @@ function speakWord() {
 function speakSentence() { 
     window.speechSynthesis.cancel(); 
     const q = state.quizSet[state.quizIdx]; 
-    const msg = new SpeechSynthesisUtterance(q.sen); msg.lang = 'en-US'; 
+    
+    // ✨ 關鍵修正：直接使用 q.sen，這是不含底線的原始完整句子
+    const msg = new SpeechSynthesisUtterance(q.sen); 
+    
+    msg.lang = 'en-US'; 
+    msg.rate = 0.7; // 稍微慢一點點，讓學生聽得更清楚
     window.speechSynthesis.speak(msg); 
 }
 
