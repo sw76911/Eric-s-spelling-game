@@ -57,22 +57,37 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
     font-weight: bold; text-align: center; line-height: 40px; cursor: pointer;
 }
 
+/* 字母池容器：讓字母橫向排列 */
 .letter-pool {
-    display: flex; justify-content: center; flex-wrap: wrap; gap: 12px;
-    padding: 15px; background: #fdfdfd; border-radius: 20px;
-    border: 2px dashed #e0e0e0; margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;       /* 超過寬度自動換到下一行 */
+    justify-content: center; /* 居中對齊 */
+    gap: 10px;            /* 字母之間的間距 */
+    margin: 15px 0;
+    padding: 10px;
 }
 
 .letter-bubble {
-    display: flex; justify-content: center; align-items: center;
-    width: 50px; height: 50px; background: white;
-    border: 2px solid var(--primary); border-radius: 50%;
-    font-size: 22px; font-weight: bold; color: var(--primary);
-    cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: all 0.1s ease; user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: white;
+    border: 2px solid var(--primary);
+    border-radius: 50%;    /* 圓形 */
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--primary);
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--primary); /* 立體感 */
+    transition: transform 0.1s;
 }
 
-.letter-bubble:active { transform: scale(0.85); background: var(--primary); color: white; }
+.letter-bubble:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
 
 /* --- 關卡列表容器 --- */
 #level-list {
