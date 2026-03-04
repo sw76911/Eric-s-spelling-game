@@ -217,10 +217,6 @@ function checkAnswer() {
         updateUI();
     }
 }
-    saveLocal();  // 儲存狀態
-    updateUI();   // 更新畫面上的數值
-}
-
 // --- 5. 貓咪照顧與背包功能 ---
 function care(type) {
     if (type === 'fish' && state.inventory.fish > 0) {
