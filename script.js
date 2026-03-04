@@ -171,18 +171,17 @@ function startLevel(levelKey) {
 
 function loadQuiz() {
     const q = state.quizSet[state.quizIdx];
-    document.getElementById('progressIdx').innerText = state.quizIdx + 1;
-    document.getElementById('totalIdx').innerText = state.quizSet.length;
-    document.getElementById('qPos').innerText = q.pos;
-    document.getElementById('qCnText').innerText = q.cn;
-    document.getElementById('qSentence').innerText = q.sen.replace(new RegExp(q.en, 'gi'), '______');
-    document.getElementById('qTrans').innerText = q.trans || "";
+    // ... (前面的進度顯示代碼保持不變) ...
 
     const area = document.getElementById('inputArea');
     const slots = document.getElementById('wordSlots');
     area.innerHTML = ""; slots.innerHTML = "";
     
     if (state.mode === 'scramble') {
+        // ✨ 重點：建立一個容器並賦予 letter-pool 類別
+        const poolDiv = document.createElement('div');
+        poolDiv.className = "letter-pool"; 
+        
         let letters = q.en.split('').sort(() => Math.random() - 0.5);
         letters.forEach((char, idx) => {
             const btn = document.createElement('div');
@@ -193,8 +192,16 @@ function loadQuiz() {
                 slot.className = "word-slot";
                 slot.innerText = char;
                 slots.appendChild(slot);
-                btn.style.visibility = "hidden";
+                btn.style.visibility = "hidden"; // 點選後消失
             };
+            poolDiv.appendChild(btn); // 放進橫向容器
+        });
+        area.appendChild(poolDiv); // 將容器放進輸入區
+    } else {
+        // 拼字模式保持不變
+        area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="輸入單字" onkeydown="if(event.key==='Enter') checkAnswer()">`;
+    }
+}
             area.appendChild(btn);
         });
     } else {
