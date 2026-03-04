@@ -40,3 +40,30 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
 .tab-btn { padding: 8px 12px; border: none; border-radius: 10px; background: #eee; cursor: pointer; font-size: 14px; }
 .tab-btn.active { background: var(--primary); color: white; }
 .audio-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px; margin-left: 8px; }
+
+/* --- 關卡列表容器 (針對 Level 1~30 擴充) --- */
+#level-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 保持兩欄排列 */
+    gap: 12px;                     /* 按鈕間距 */
+    max-height: 450px;              /* 這是關鍵：限制高度，避免畫面被撐太長 */
+    overflow-y: auto;               /* 超過高度時自動出現滾輪 */
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.6); /* 淡淡的底色 */
+    border-radius: 20px;
+    border: 2px solid #ffccbc;      /* 給列表一個淡橘色的邊框 */
+    margin-top: 10px;
+}
+
+/* 讓滾動條看起來更精緻 (選配，建議加上) */
+#level-list::-webkit-scrollbar {
+    width: 8px;
+}
+#level-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+#level-list::-webkit-scrollbar-thumb {
+    background: #ffab91; /* 貓咪肉球色 */
+    border-radius: 10px;
+}
