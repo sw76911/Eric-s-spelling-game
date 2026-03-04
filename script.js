@@ -33,10 +33,11 @@ const themes = {
 { en: "Woman", cn: "女人", pos: "n.", sen: "The ____ is my mother.", trans: "那位女人是我的母親。" },
 { en: "Youth", cn: "青年", pos: "n.", sen: "Enjoy your ____ while you can.", trans: "趁年輕時好好享受青春。" },
 ],
-    'Level 2：外貌': [{en:"Heavy", cn:"重的", pos:"adj.", sen:"The box is heavy.", trans:"箱子很重。"}],
-    'Level 3：身體器官': [{en:"Ear", cn:"耳朵", pos:"n.", sen:"We listen with our ears.", trans:"我們用耳朵聽。"}],
-    'Level 4：健康醫療': [{en:"Dizzy", cn:"頭暈的", pos:"adj.", sen:"I feel dizzy.", trans:"我覺得頭暈。"}],
-    'Level 5：家庭成員': [{en:"Granddaughter", cn:"孫女", pos:"n.", sen:"He loves his granddaughter.", trans:"他愛他的孫女。"}]
+    'Level 2：外貌與個性特徵': [{en:"Heavy", cn:"重的", pos:"adj.", sen:"The box is heavy.", trans:"箱子很重。"}],
+    'Level 3：身體部位與器官': [{en:"Ear", cn:"耳朵", pos:"n.", sen:"We listen with our ears.", trans:"我們用耳朵聽。"}],
+    'Level 4：健康、症狀與醫療': [{en:"Dizzy", cn:"頭暈的", pos:"adj.", sen:"I feel dizzy.", trans:"我覺得頭暈。"}],
+    'Level 5：家庭成員與家庭': [{en:"Granddaughter", cn:"孫女", pos:"n.", sen:"He loves his granddaughter.", trans:"他愛他的孫女。"}],
+    'Level 6：稱呼': [{ en: "Mr.", cn: "先生", pos: "n.", sen: "____ Lin is our English teacher.", trans: "林先生是我們的英文老師。" }]
 };
 
 const shopItems = {
