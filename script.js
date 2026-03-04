@@ -213,6 +213,9 @@ function renderShop(cat, btn) {
     const cont = document.getElementById('shop-content');
     cont.innerHTML = "";
     if (!shopItems[cat]) return;
+    const isOwned = state.bag.some(owned => owned.id === key);
+    const btnText = isOwned ? "已擁有" : `${item.price} 💰`;
+    const btnStyle = isOwned ? "background:#ccc; cursor:default;" : "";
     
     shopItems[cat].forEach(i => {
         const itemDiv = document.createElement('div');
