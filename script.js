@@ -1,8 +1,9 @@
 // --- 1. 基礎與狀態設定 ---
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOiL-ScKXeJQSi4kFw8o5zUWSXjtSdJlQfkZlc7mZxhNgcgmuXCppJejFamm1pxF98/exec"; 
 const MY_PRIVATE_PASSWORD = "0127"; 
 
+// 初始狀態模版
 let state = {
+    currentUser: '',
     coins: 100, hunger: 80, clean: 80, mood: 80, catName: '我的小貓',
     inventory: { fish: 2, soap: 1 }, bag: [], wrongList: [],
     equipped: { head:null, suit:null, socks:null, color:'#f39c12' },
@@ -10,34 +11,137 @@ let state = {
 };
 
 const shopItems = {
-    daily: [{id:'f1', name:'鮮魚', price:10, type:'fish'}, {id:'s1', name:'沐浴乳', price:10, type:'soap'}],
+    daily: [{id:'f1', name:'鮮魚', price:10, type:'fish', icon:'🐟'}, {id:'s1', name:'沐浴乳', price:10, type:'soap', icon:'🧼'}],
     toys: [{id:'t1', name:'皮球', price:20, type:'toy', icon:'⚽'}, {id:'t2', name:'逗貓棒', price:30, type:'toy', icon:'🪄'}],
-    hats: [{id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head'}, {id:'h2', name:'飛行帽', price:90, style:'#8b4513', part:'head'}],
-    clothes: [{id:'c1', name:'小T', price:60, style:'#98fb98', part:'suit'}, {id:'c2', name:'背心', price:120, style:'skyblue', part:'suit'}],
-    socks: [{id:'k1', name:'白襪', price:15, style:'#ffffff', part:'socks'}, {id:'k2', name:'黑襪', price:15, style:'#333333', part:'socks'}]
+    hats: [{id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head', icon:'👒'}, {id:'h2', name:'飛行帽', price:90, style:'#8b4513', part:'head', icon:'👨‍✈️'}],
+    clothes: [{id:'c1', name:'小T', price:60, style:'#98fb98', part:'suit', icon:'👕'}, {id:'c2', name:'背心', price:120, style:'skyblue', part:'suit', icon:'🎽'}],
+    socks: [{id:'k1', name:'白襪', price:15, style:'#ffffff', part:'socks', icon:'🧦'}, {id:'k2', name:'黑襪', price:15, style:'#333333', part:'socks', icon:'🧦'}]
 };
 
-let currentInputArr = []; // 儲存字母重組已點選的字母
-let poolLetters = [];    // 儲存字母重組待選的字母池
+// --- 2. 存檔與安全性邏輯 ---
 
-// --- 2. 核心功能：發音 (修正點 2) ---
-function speakWord() { 
-    window.speechSynthesis.cancel(); 
-    const q = state.quizSet[state.quizIdx]; 
-    const msg = new SpeechSynthesisUtterance(q.en); 
-    msg.lang = 'en-US'; 
-    window.speechSynthesis.speak(msg); 
-}
-function speakSentence() { 
-    window.speechSynthesis.cancel(); 
-    const q = state.quizSet[state.quizIdx]; 
-    const msg = new SpeechSynthesisUtterance(q.sen); 
-    msg.lang = 'en-US'; 
-    msg.rate = 0.8; 
-    window.speechSynthesis.speak(msg); 
+// 統一存檔：包含加密與專屬名稱
+function saveLocal() { 
+    if (!state.currentUser) return; 
+    const dataString = JSON.stringify(state);
+    const encodedData = btoa(unescape(encodeURIComponent(dataString)));
+    localStorage.setItem('catGame_V35_Data_' + state.currentUser, encodedData); 
 }
 
-// --- 3. 遊戲流程與字母重組 (修正點 1) ---
+// 統一讀取：包含背包大掃除（去重）
+function loadLocal() { 
+    if (!state.currentUser) return; 
+    const savedRaw = localStorage.getItem('catGame_V35_Data_' + state.currentUser); 
+    
+    if (savedRaw) {
+        try {
+            const decodedData = decodeURIComponent(escape(atob(savedRaw)));
+            state = JSON.parse(decodedData);
+
+            // ✨ 背包大掃除：移除重複 ID 的永久道具
+            if (state.bag && state.bag.length > 0) {
+                state.bag = state.bag.filter((item, index, self) =>
+                    index === self.findIndex((t) => t.id === item.id)
+                );
+            }
+        } catch(e) {
+            console.error("讀取失敗，重新初始化");
+            resetNewUser(state.currentUser);
+        }
+    } else {
+        resetNewUser(state.currentUser);
+    }
+    updateUI();
+}
+
+function resetNewUser(name) {
+    state.coins = 100;
+    state.inventory = { fish: 2, soap: 1 };
+    state.bag = [];
+    state.wrongList = [];
+    state.catName = name + "的小貓";
+    state.hunger = 80; state.clean = 80; state.mood = 80;
+}
+
+// 登入驗證
+function verifyAccess() {
+    const name = document.getElementById('userNameInput').value.trim();
+    const pass = document.getElementById('authCodeInput').value;
+
+    if (pass === MY_PRIVATE_PASSWORD) {
+        if (!name) return alert("請輸入使用者名稱！");
+        state.currentUser = name; 
+        loadLocal(); // 載入專屬進度並打掃背包
+        document.getElementById('lockOverlay').style.display = 'none';
+        updateUI();
+    } else { 
+        alert("管理密碼錯誤！"); 
+    }
+}
+
+// --- 3. 商店與購買功能 ---
+
+function renderShop(cat, btn) {
+    if(btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    const cont = document.getElementById('shop-content');
+    cont.innerHTML = "";
+    if (!shopItems[cat]) return;
+    
+    shopItems[cat].forEach(i => {
+        const isPermanent = (cat !== 'daily'); 
+        const isOwned = isPermanent && state.bag.some(owned => owned.id === i.id);
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = "item-card";
+        
+        const displayPrice = isOwned ? "已擁有" : `💰 ${i.price}`;
+        const clickAction = isOwned ? "alert('你已經擁有囉！')" : `buyItem('${cat}', '${i.id}')`;
+        const opacityStyle = isOwned ? "opacity: 0.6; cursor: default;" : "cursor: pointer;";
+        const btnBg = isOwned ? "#ccc" : "var(--primary)";
+
+        itemDiv.innerHTML = `
+            <div style="font-size:30px; margin-bottom:5px;">${i.icon || '👕'}</div>
+            <div style="font-weight:bold;">${i.name}</div>
+            <button onclick="${clickAction}" style="margin-top:10px; padding:5px 10px; border-radius:10px; border:none; background:${btnBg}; color:white; ${opacityStyle}">
+                ${displayPrice}
+            </button>`;
+        cont.appendChild(itemDiv);
+    });
+}
+
+function buyItem(cat, id) {
+    const item = shopItems[cat].find(x => x.id === id);
+    if (!item) return;
+
+    if (cat !== 'daily') {
+        if (state.bag.some(owned => owned.id === id)) {
+            alert("你已經買過這個囉！");
+            return;
+        }
+    }
+
+    if (state.coins >= item.price) {
+        state.coins -= item.price;
+        if (cat === 'daily') {
+            if (item.type === 'fish') state.inventory.fish++;
+            if (item.type === 'soap') state.inventory.soap++;
+        } else {
+            state.bag.push({ id: id, name: item.name, type: item.type, icon: item.icon });
+        }
+        alert(`成功購買 ${item.name}！`);
+        saveLocal();
+        updateUI();
+        renderShop(cat); 
+    } else {
+        alert("金幣不足喔！");
+    }
+}
+
+// --- 4. 遊戲流程控制 ---
+
 function showLevelSelect(mode) {
     state.mode = mode;
     document.getElementById('lobbyScreen').style.display = 'none';
@@ -45,16 +149,24 @@ function showLevelSelect(mode) {
     renderLevelSelect();
 }
 
+function renderLevelSelect() {
+    const list = document.getElementById('level-list');
+    list.innerHTML = "";
+    Object.keys(themes).forEach(t => {
+        const btn = document.createElement('div');
+        btn.className = "item-card";
+        btn.innerText = t;
+        btn.onclick = () => startLevel(t);
+        list.appendChild(btn);
+    });
+}
+
 function startLevel(levelKey) {
-    if (!themes[levelKey]) return;
-    state.hunger = Math.max(0, state.hunger - 5);
-    state.clean = Math.max(0, state.clean - 5);
     state.quizSet = [...themes[levelKey]].sort(() => Math.random() - 0.5).slice(0, 15);
     state.quizIdx = 0;
     document.getElementById('levelScreen').style.display = 'none';
     document.getElementById('gameScreen').style.display = 'block';
     loadQuiz();
-    updateUI();
 }
 
 function loadQuiz() {
@@ -62,120 +174,72 @@ function loadQuiz() {
     document.getElementById('progressIdx').innerText = state.quizIdx + 1;
     document.getElementById('totalIdx').innerText = state.quizSet.length;
     document.getElementById('qPos').innerText = q.pos;
-    
-    // UI 顯示控制
-    const qCnText = document.getElementById('qCnText');
-    const wordBtn = document.getElementById('wordVoiceBtn');
-    const senBtn = document.getElementById('sentenceVoiceBtn');
-    if (state.mode === 'sentence') {
-        document.getElementById('quizModeLabel').innerText = "📖 例句挑戰";
-        qCnText.style.display = "none"; wordBtn.style.display = "none"; senBtn.style.display = "inline-block";
-    } else {
-        document.getElementById('quizModeLabel').innerText = state.mode === 'scramble' ? "🧩 字母重組" : "✍️ 拼字練習";
-        qCnText.innerText = q.cn; qCnText.style.display = "inline"; wordBtn.style.display = "inline-block"; senBtn.style.display = "none";
-    }
-
+    document.getElementById('qCnText').innerText = q.cn;
     document.getElementById('qSentence').innerText = q.sen.replace(new RegExp(q.en, 'gi'), '______');
     document.getElementById('qTrans').innerText = q.trans || "";
 
-    // 清空輸入區
     const area = document.getElementById('inputArea');
     const slots = document.getElementById('wordSlots');
     area.innerHTML = ""; slots.innerHTML = "";
-    currentInputArr = [];
-
+    
     if (state.mode === 'scramble') {
-        // 字母重組模式：生成可點擊氣泡
-        poolLetters = q.en.split('').sort(() => Math.random() - 0.5);
-        renderPool();
-        // 顯示空格槽
-        for(let i=0; i<q.en.length; i++) {
-            slots.innerHTML += `<span class="word-slot" onclick="removeLetter(${i})"></span>`;
-        }
+        let letters = q.en.split('').sort(() => Math.random() - 0.5);
+        letters.forEach((char, idx) => {
+            const btn = document.createElement('div');
+            btn.className = "letter-bubble";
+            btn.innerText = char;
+            btn.onclick = () => {
+                const slot = document.createElement('span');
+                slot.className = "word-slot";
+                slot.innerText = char;
+                slots.appendChild(slot);
+                btn.style.visibility = "hidden";
+            };
+            area.appendChild(btn);
+        });
     } else {
-        // 拼字模式：顯示輸入框
-        area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="輸入單字" autofocus onkeydown="if(event.key==='Enter') checkAnswer()">`;
+        area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="輸入單字" onkeydown="if(event.key==='Enter') checkAnswer()">`;
     }
-}
-
-// 渲染待選字母池
-function renderPool() {
-    const area = document.getElementById('inputArea');
-    area.innerHTML = `<div class="letter-pool"></div>`;
-    const poolCont = area.querySelector('.letter-pool');
-    poolLetters.forEach((char, idx) => {
-        if(char === null) return;
-        const btn = document.createElement('div');
-        btn.className = "letter-bubble";
-        btn.innerText = char;
-        btn.onclick = () => selectLetter(idx);
-        poolCont.appendChild(btn);
-    });
-}
-
-function selectLetter(idx) {
-    const char = poolLetters[idx];
-    currentInputArr.push({ char, originIdx: idx });
-    poolLetters[idx] = null; // 標記已選
-    renderPool();
-    updateSlots();
-}
-
-function removeLetter(slotIdx) {
-    if(!currentInputArr[slotIdx]) return;
-    const item = currentInputArr.splice(slotIdx, 1)[0];
-    poolLetters[item.originIdx] = item.char;
-    renderPool();
-    updateSlots();
-}
-
-function updateSlots() {
-    const slotElements = document.querySelectorAll('.word-slot');
-    slotElements.forEach((el, i) => {
-        el.innerText = currentInputArr[i] ? currentInputArr[i].char : "";
-    });
 }
 
 function checkAnswer() {
     const q = state.quizSet[state.quizIdx];
-    let ans = (state.mode === 'scramble') ? currentInputArr.map(i=>i.char).join('') : document.getElementById('spellInput').value.trim();
+    let ans = "";
+    if (state.mode === 'scramble') {
+        ans = Array.from(document.querySelectorAll('.word-slot')).map(el => el.innerText).join('');
+    } else {
+        ans = document.getElementById('spellInput').value.trim();
+    }
     
     if (ans.toLowerCase() === q.en.toLowerCase()) {
         state.coins += 5;
         alert("答對了！💰+5");
-        nextQuestion();
     } else {
-        state.mood = Math.max(0, state.mood - 5);
         alert("答錯了！答案是: " + q.en);
         if(!state.wrongList.some(w => w.en === q.en)) state.wrongList.push(q);
-        nextQuestion();
     }
-    updateUI();
-    saveLocal();
-}
-
-function nextQuestion() {
     state.quizIdx++;
     if (state.quizIdx >= state.quizSet.length) {
-        alert("🎉 挑戰完成！");
+        alert("挑戰完成！");
         goHome();
     } else {
         loadQuiz();
     }
+    saveLocal();
+    updateUI();
 }
 
-// --- 4. 貓咪照顧功能 (修正點 3) ---
+// --- 5. 貓咪照顧與背包功能 ---
+
 function care(type) {
     if (type === 'fish' && state.inventory.fish > 0) {
         state.hunger = Math.min(100, state.hunger + 20);
         state.inventory.fish--;
-        alert("餵食成功！🍖+20");
     } else if (type === 'soap' && state.inventory.soap > 0) {
         state.clean = Math.min(100, state.clean + 20);
         state.inventory.soap--;
-        alert("洗澡成功！🧼+20");
     } else {
-        alert("道具不足，請去商城購買喔！");
+        return alert("道具不足！");
     }
     updateUI();
     saveLocal();
@@ -187,13 +251,16 @@ function openToySelect() {
     const cont = document.getElementById('toyOptionList');
     cont.innerHTML = "";
     myToys.forEach(t => {
-        cont.innerHTML += `<div onclick="useToy('${t.id}')" style="cursor:pointer; font-size:30px;">${t.icon}<br><small>${t.name}</small></div>`;
+        const div = document.createElement('div');
+        div.style.cursor = "pointer";
+        div.innerHTML = `${t.icon}<br><small>${t.name}</small>`;
+        div.onclick = () => useToy(t);
+        cont.appendChild(div);
     });
     document.getElementById('toySelectModal').style.display = 'block';
 }
 
-function useToy(id) {
-    const toy = state.bag.find(i => i.id === id);
+function useToy(toy) {
     document.getElementById('toySelectModal').style.display = 'none';
     const disp = document.getElementById('toyDisplay');
     disp.innerText = toy.icon;
@@ -204,88 +271,8 @@ function useToy(id) {
     saveLocal();
 }
 
-// --- 5. 商城功能 (修正點 4) ---
-function renderShop(cat, btn) {
-    if(btn) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-    const cont = document.getElementById('shop-content');
-    cont.innerHTML = "";
-    
-    // 注意：這裡要對應你 data.js 裡的資料結構 (假設是 shopItems)
-    if (!shopItems[cat]) return;
-    
-    shopItems[cat].forEach(i => {
-        const isPermanent = (cat !== 'daily'); 
-        const isOwned = isPermanent && state.bag.some(owned => owned.id === i.id);
+// --- 6. UI 更新與輔助功能 ---
 
-        const itemDiv = document.createElement('div');
-        itemDiv.className = "item-card";
-        
-        const displayPrice = isOwned ? "已擁有" : `💰 ${i.price}`;
-        // 修正：確保呼叫時傳入兩個參數
-        const clickAction = isOwned ? "alert('你已經買過這個囉！')" : `buyItem('${cat}', '${i.id}')`;
-        const opacityStyle = isOwned ? "opacity: 0.6; cursor: default;" : "cursor: pointer;";
-        const btnBg = isOwned ? "#ccc" : "var(--primary)";
-
-        itemDiv.innerHTML = `
-            <div style="font-size:30px; margin-bottom:5px;">${i.icon || '👕'}</div>
-            <div style="font-weight:bold;">${i.name}</div>
-            <button 
-                onclick="${clickAction}" 
-                style="margin-top:10px; padding:5px 10px; border-radius:10px; border:none; background:${btnBg}; color:white; ${opacityStyle}">
-                ${displayPrice}
-            </button>
-        `;
-        cont.appendChild(itemDiv);
-    });
-}
-
-function buyItem(cat, id) {
-    // 從資料庫中找出該物品
-    const item = shopItems[cat].find(x => x.id === id);
-    if (!item) return;
-
-    // 1. 檢查是否重複購買
-    const permanentTypes = ['clothes', 'hats', 'socks', 'toys', 'bg']; // 包含你所有的分類
-    if (cat !== 'daily') {
-        const alreadyOwned = state.bag.some(owned => owned.id === id);
-        if (alreadyOwned) {
-            alert(`📢 提醒：你已經擁有「${item.name}」囉！`);
-            return; 
-        }
-    }
-
-    // 2. 檢查金幣
-    if (state.coins >= item.price) {
-        state.coins -= item.price;
-        
-        // 3. 根據種類加入背包
-        if (cat === 'daily') {
-            if (item.type === 'food') state.inventory.fish++;
-            if (item.type === 'clean') state.inventory.soap++;
-        } else {
-            state.bag.push({
-                id: id,
-                name: item.name,
-                type: item.type,
-                icon: item.icon
-            });
-        }
-        
-        alert(`成功購買 ${item.name}！`);
-        updateUI();
-        saveLocal();
-        
-        // 重要：買完立刻重刷商店頁面，按鈕才會變灰色的「已擁有」
-        renderShop(cat); 
-    } else {
-        alert("金幣不足喔！");
-    }
-}
-
-// --- 6. 系統與 UI ---
 function updateUI() {
     document.getElementById('coinDisplay').innerText = state.coins;
     document.getElementById('wrongCount').innerText = state.wrongList.length;
@@ -296,39 +283,16 @@ function updateUI() {
     document.getElementById('inv-soap').innerText = state.inventory.soap;
     document.getElementById('catNameLabel').innerText = state.catName;
     
-    // 背包顯示
     const bagCont = document.getElementById('bag-content');
     if(bagCont) {
         bagCont.innerHTML = "";
         state.bag.forEach(i => {
-            bagCont.innerHTML += `<div class="item-card">${i.icon || '👕'} ${i.name}</div>`;
+            const div = document.createElement('div');
+            div.className = "item-card";
+            div.innerText = `${i.icon || '👕'} ${i.name}`;
+            bagCont.appendChild(div);
         });
     }
-}
-
-function renderLevelSelect() {
-    const list = document.getElementById('level-list');
-    if (!list) return;
-    list.innerHTML = "";
-    Object.keys(themes).forEach(t => {
-        const btn = document.createElement('div');
-        btn.className = "item-card";
-        btn.innerText = t;
-        btn.onclick = () => startLevel(t);
-        list.appendChild(btn);
-    });
-}
-
-function verifyAccess() {
-    if (document.getElementById('authCodeInput').value === MY_PRIVATE_PASSWORD) {
-        document.getElementById('lockOverlay').style.display = 'none';
-        updateUI();
-    } else { alert("密碼錯誤！"); }
-}
-
-function toggleModal(id, s) { 
-    document.getElementById(id).style.display = s ? 'block' : 'none'; 
-    if(id === 'shopModal' && s) renderShop('daily'); // 打開商城預設顯示日常
 }
 
 function goHome() {
@@ -337,33 +301,23 @@ function goHome() {
     updateUI();
 }
 
-function saveLocal() { localStorage.setItem('catGame_V35', JSON.stringify(state)); }
-function loadLocal() { 
-    const savedRaw = localStorage.getItem('catGame_V35_Data_' + state.currentUser); 
-    
-    if (savedRaw) {
-        try {
-            const decodedData = decodeURIComponent(escape(atob(savedRaw)));
-            state = JSON.parse(decodedData);
-
-            // ✨ --- 新增：背包大掃除邏輯 --- ✨
-            if (state.bag && state.bag.length > 0) {
-                // 利用 filter 檢查，如果目前的索引不是該 ID 第一次出現的索引，就過濾掉
-                state.bag = state.bag.filter((item, index, self) =>
-                    index === self.findIndex((t) => t.id === item.id)
-                );
-                // 清理完後立刻存檔，確保下次進來是乾淨的
-                saveLocal();
-            }
-            // ----------------------------------
-
-        } catch(e) {
-            console.error("讀取存檔失敗");
-            resetNewUser(state.currentUser);
-        }
-    } else {
-        resetNewUser(state.currentUser);
-    }
+function toggleModal(id, s) { 
+    document.getElementById(id).style.display = s ? 'block' : 'none'; 
+    if(id === 'shopModal' && s) renderShop('daily'); 
 }
 
-window.onload = () => { loadLocal(); updateUI(); };
+// 發音功能
+function speakWord() { 
+    window.speechSynthesis.cancel(); 
+    const q = state.quizSet[state.quizIdx]; 
+    const msg = new SpeechSynthesisUtterance(q.en); msg.lang = 'en-US'; 
+    window.speechSynthesis.speak(msg); 
+}
+function speakSentence() { 
+    window.speechSynthesis.cancel(); 
+    const q = state.quizSet[state.quizIdx]; 
+    const msg = new SpeechSynthesisUtterance(q.sen); msg.lang = 'en-US'; 
+    window.speechSynthesis.speak(msg); 
+}
+
+window.onload = () => { updateUI(); };
