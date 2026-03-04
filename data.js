@@ -16,7 +16,7 @@ const themes = {
 { en: "Guest", cn: "客人、來賓", pos: "n.", sen: "We have a guest at home today.", trans: "我們有一位客人要來吃晚餐。" },
 { en: "Guy", cn: "傢伙", pos: "n.", sen: "He is a nice guy.", trans: "他是個不錯的傢伙。" },
 { en: "Hero", cn: "英雄", pos: "n.", sen: "Spider-Man is my hero.", trans: "消防員是我心目中的英雄。" },
-{ en: "Host", cn: "男主(持)人", pos: "n.", sen: "The host says "Welcome!"", trans: "男主人歡迎大家參加聚會。" },
+{ en: "Host", cn: "男主(持)人", pos: "n.", sen: "The host says 'Welcome!'", trans: "男主人歡迎大家參加聚會。" },
 { en: "Kid", cn: "孩童、青年", pos: "n.", sen: "The kid is playing with a ball.", trans: "孩子，別傻了。" },
 { en: "King", cn: "國王", pos: "n.", sen: "The king lives in a big castle.", trans: "國王戴著金色的皇冠。" },
 { en: "Lady", cn: "淑女、女士", pos: "n.", sen: "She is a beautiful lady.", trans: "各位女士、先生，歡迎！" },
