@@ -9,9 +9,16 @@
 <body>
 
 <div id="lockOverlay">
-    <h2 style="color:var(--primary);">🔒 私密同步空間</h2>
-    <input type="password" id="authCodeInput" class="lock-input" placeholder="請輸入進入密碼">
-    <button onclick="verifyAccess()" style="width:80%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-size:18px;">同步進度並開始</button>
+    <h2 style="color:var(--primary);">🐱 貓咪單字大冒險</h2>
+    <div style="margin-bottom: 20px;">
+        <p style="text-align:left; margin-bottom:5px; color:#666;">👤 使用者名稱：</p>
+        <input type="text" id="userNameInput" class="lock-input" placeholder="例如：小明" style="margin-bottom:10px;">
+        
+        <p style="text-align:left; margin-bottom:5px; color:#666;">🔑 管理密碼：</p>
+        <input type="password" id="authCodeInput" class="lock-input" placeholder="請詢問老師或家長">
+    </div>
+    
+    <button onclick="verifyAccess()" style="width:80%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-size:18px; cursor:pointer; font-weight:bold;">同步進度並開始</button>
 </div>
 
 <div class="container">
