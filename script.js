@@ -93,17 +93,20 @@ function nextQuestion() {
 }
 
 function verifyAccess() {
-    if (document.getElementById('authCodeInput').value !== MY_PRIVATE_PASSWORD) return alert("密碼錯誤");
-    document.getElementById('lockOverlay').style.display = 'none'; loadLocal(); updateUI(); renderShop('daily');
-}
-function formatWord(w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); }
-function showLevelSelect(m) { state.mode = m; const list = document.getElementById('level-list'); list.innerHTML = ""; Object.keys(themes).forEach(t => { list.innerHTML += `<div class="item-card" onclick="startLevel('${t}')">🌟 ${t}</div>`; }); showScreen('levelScreen'); }
-function renderPool() { const area = document.getElementById('inputArea'); area.innerHTML = ""; poolLetters.forEach((l, idx) => { if(l !== null) area.innerHTML += `<button class="letter-btn" onclick="addLetter('${l}', ${idx})">${l}</button>`; else area.innerHTML += `<div class="letter-btn" style="opacity:0.2; cursor:default;">&nbsp;</div>`; }); }
-function addLetter(l, idx) { const slots = document.querySelectorAll('.word-slot'); if(currentInputArr.length < poolLetters.length) { currentInputArr.push({char: l, originIdx: idx}); poolLetters[idx] = null; renderPool(); const lastIdx = currentInputArr.length - 1; slots[lastIdx].innerText = l; } }
-function removeLetter(slotIdx) { if(currentInputArr[slotIdx]) { const item = currentInputArr.splice(slotIdx, 1)[0]; poolLetters[item.originIdx] = item.char; renderPool(); const slots = document.querySelectorAll('.word-slot'); slots.forEach(s => s.innerText = ""); currentInputArr.forEach((val, i) => slots[i].innerText = val.char); } }
-function startReview() { if(state.wrongList.length === 0) return alert("沒有錯題！"); state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5).slice(0, 15); state.quizIdx = 0; state.mode = 'spell'; showScreen('gameScreen'); loadQuiz(); }
-function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }if (Id === 'levelSelectScreen') {
-        renderLevelSelect();
+    const input = document.getElementById('authCodeInput').value;
+    // MY_PRIVATE_PASSWORD 是你在 script.js 最上方設定的密碼
+    if (input === MY_PRIVATE_PASSWORD) {
+        // 1. 隱藏鎖定層
+        document.getElementById('lockOverlay').style.display = 'none';
+        
+        // 2. 初始化按鈕 (這是重點！)
+        renderLevelSelect(); 
+        
+        // 3. 更新一下貓咪狀態
+        updateUI();
+        console.log("登入成功，已渲染關卡");
+    } else {
+        alert("密碼錯誤！");
     }
 }
 function renderLevelSelect() {
