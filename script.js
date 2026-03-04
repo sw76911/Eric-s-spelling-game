@@ -339,8 +339,31 @@ function goHome() {
 
 function saveLocal() { localStorage.setItem('catGame_V35', JSON.stringify(state)); }
 function loadLocal() { 
-    const saved = localStorage.getItem('catGame_V35'); 
-    if(saved) state = JSON.parse(saved); 
+    const savedRaw = localStorage.getItem('catGame_V35_Data_' + state.currentUser); 
+    
+    if (savedRaw) {
+        try {
+            const decodedData = decodeURIComponent(escape(atob(savedRaw)));
+            state = JSON.parse(decodedData);
+
+            // ✨ --- 新增：背包大掃除邏輯 --- ✨
+            if (state.bag && state.bag.length > 0) {
+                // 利用 filter 檢查，如果目前的索引不是該 ID 第一次出現的索引，就過濾掉
+                state.bag = state.bag.filter((item, index, self) =>
+                    index === self.findIndex((t) => t.id === item.id)
+                );
+                // 清理完後立刻存檔，確保下次進來是乾淨的
+                saveLocal();
+            }
+            // ----------------------------------
+
+        } catch(e) {
+            console.error("讀取存檔失敗");
+            resetNewUser(state.currentUser);
+        }
+    } else {
+        resetNewUser(state.currentUser);
+    }
 }
 
 window.onload = () => { loadLocal(); updateUI(); };
