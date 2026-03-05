@@ -292,9 +292,16 @@ function goHome() {
     updateUI();
 }
 
-function toggleModal(id, s) { 
-    document.getElementById(id).style.display = s ? 'block' : 'none'; 
-    if(id === 'shopModal' && s) renderShop('daily'); 
+function toggleModal(id, s) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    
+    modal.style.display = s ? 'block' : 'none'; 
+    
+    if (s) {
+        if (id === 'shopModal') renderShop('daily'); 
+        *** if (id === 'wrongListModal') renderWrongList(); // *** 修正點：確保這行存在，視窗才會畫出錯題 ***
+    }
 }
 
 function speakWord() { 
