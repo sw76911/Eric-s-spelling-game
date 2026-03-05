@@ -34,9 +34,8 @@
             <div class="item-card" onclick="showLevelSelect('scramble')">🧩 字母重組</div>
             <div class="item-card" onclick="showLevelSelect('spell')">✍️ 拼字練習</div>
             <div class="item-card" onclick="showLevelSelect('sentence')">📖 例句挑戰</div>
-            <div class="item-card" onclick="startReview()" style="background: #fff5f5;">📔 錯題複習 (<span id="wrongCount">0</span>)</div>
-        </div>
-        <h3 style="color:var(--pink); margin-top:20px;">商城與背包</h3>
+           <div class="item-card" onclick="toggleModal('wrongListModal', true)" style="background: #fff5f5; cursor:pointer;">📔 錯題複習 (<span id="wrongCount">0</span>)</div>
+        </div><h3 style="color:var(--pink); margin-top:20px;">商城與背包</h3>
         <div class="grid-list">
             <div class="item-card" onclick="toggleModal('shopModal', true)">🛒 商城</div>
             <div class="item-card" onclick="toggleModal('bagModal', true)">🎒 背包</div>
@@ -115,7 +114,15 @@
     </div>
     <div id="shop-content" class="grid-list"></div>
 </div>
-
+<div id="wrongListModal" class="modal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0;">📔 錯題複習本</h3>
+        <button onclick="toggleModal('wrongListModal', false)" style="border:none; background:none; font-size:20px;">✖</button>
+    </div>
+    <div id="wrongListContent" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+        </div>
+    <button onclick="toggleModal('wrongListModal', false)" style="width:100%; margin-top:20px; padding:10px; border-radius:10px; border:1px solid #ccc; background:#f9f9f9;">關閉</button>
+</div>
 <div id="bagModal" class="modal">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h3 style="margin:0;">🎒 雲端背包</h3>
