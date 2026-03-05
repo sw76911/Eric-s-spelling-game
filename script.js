@@ -300,7 +300,7 @@ function toggleModal(id, s) {
     
     if (s) {
         if (id === 'shopModal') renderShop('daily'); 
-        *** if (id === 'wrongListModal') renderWrongList(); // *** 修正點：確保這行存在，視窗才會畫出錯題 ***
+        if (id === 'wrongListModal') renderWrongList(); // *** 修正點：確保這行存在，視窗才會畫出錯題 ***
     }
 }
 
