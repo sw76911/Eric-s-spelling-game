@@ -206,7 +206,12 @@ function checkAnswer() {
         alert("答對了！💰+5");
     } else {
         alert("答錯了！答案是: " + q.en);
-        if(!state.wrongList.some(w => w.en === q.en)) state.wrongList.push(q);
+      if(!state.wrongList.some(w => w.en === q.en)) {
+            state.wrongList.push({
+                ...q, 
+                errorMode: state.mode // 紀錄錯誤時是 scramble 還是 spell
+            });
+        }
         
         state.mood = Math.max(0, state.mood - 5);
         console.log("答錯！目前心情:", state.mood);
@@ -338,24 +343,48 @@ function renderWrongList() {
 
     state.wrongList.forEach((q, index) => {
         const div = document.createElement('div');
-        // 設定錯題卡片樣式
-        div.style.cssText = "background:#fff5f5; border:1px solid #ffecec; padding:15px; border-radius:15px; text-align:left; position:relative; margin-bottom:10px;";
-        
+        div.className = "item-card";
+        div.style.cssText = "background:#fff5f5; border:1px solid #ffecec; padding:15px; border-radius:15px; text-align:left; margin-bottom:10px;";
+       // 判斷顯示名稱
+        const modeName = q.errorMode === 'scramble' ? '🧩 重組' : '✍️ 拼字';
+
         div.innerHTML = `
-            <div style="font-weight:bold; color:var(--primary); font-size:18px;">${q.en}</div>
-            <div style="font-size:14px; color:#666; margin:5px 0;">${q.cn}</div>
-            <div style="font-style:italic; color:#999; font-size:12px; padding-right:50px;">${q.sen}</div>
-            <button onclick="removeWrong(${index})" style="position:absolute; right:10px; top:10px; background:#ff7675; color:white; border:none; border-radius:8px; padding:5px 10px; cursor:pointer;">學會了</button>
+            <div style="font-weight:bold; color:var(--primary);">${q.en}</div>
+            <div style="font-size:13px; color:#666;">${q.cn}</div>
+            <div style="margin-top:10px; display:flex; gap:5px;">
+                <button onclick="retryWrong(${index})" style="background:var(--primary); color:white; border:none; border-radius:8px; padding:5px 10px; cursor:pointer;">再次挑戰 (${modeName})</button>
+                <button onclick="removeWrong(${index})" style="background:#ccc; color:white; border:none; border-radius:8px; padding:5px 10px; cursor:pointer;">移除</button>
+            </div>
         `;
         cont.appendChild(div);
     });
 }
 
-// 移除單個錯題
+// *** 關鍵保留：移除單個錯題 ***
 function removeWrong(index) {
-    state.wrongList.splice(index, 1);
-    saveLocal();
-    updateUI();
-    renderWrongList(); // 刪除後立即重新繪製清單
+    if(confirm("確定要把這個單字從錯題本移除了嗎？")) {
+        state.wrongList.splice(index, 1);
+        saveLocal();
+        updateUI();
+        renderWrongList(); // 重新整理列表
+    }
+}
+
+// *** 新增：以錯誤當時的模式重新挑戰 ***
+function retryWrong(index) {
+    const target = state.wrongList[index];
+    
+    // 1. 強制設定為錯誤時的模式
+    state.mode = target.errorMode || 'spell'; 
+    state.quizSet = [target]; // 只練習這一題
+    state.quizIdx = 0;
+    
+    // 2. 切換畫面
+    toggleModal('wrongListModal', false);
+    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+    document.getElementById('gameScreen').style.display = 'block';
+    
+    // 3. 載入內容
+    loadQuiz();
 }
 window.onload = () => { updateUI(); };
