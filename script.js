@@ -155,81 +155,88 @@ function startLevel(levelKey) {
 
 function loadQuiz() {
     const q = state.quizSet[state.quizIdx];
-    document.getElementById('progressIdx').innerText = state.quizIdx + 1;
-    document.getElementById('totalIdx').innerText = state.quizSet.length;
-    document.getElementById('qPos').innerText = q.pos;
-    document.getElementById('qCnText').innerText = q.cn;
-    document.getElementById('qSentence').innerText = q.sen.replace(new RegExp(q.en, 'gi'), '______');
-    document.getElementById('qTrans').innerText = q.trans || "";
+    if (!q) return;
 
-    const area = document.getElementById('inputArea');
-    const slots = document.getElementById('wordSlots');
-    area.innerHTML = ""; slots.innerHTML = "";
-    
-    if (state.mode === 'scramble') {
-        const poolDiv = document.createElement('div');
-        poolDiv.className = "letter-pool"; 
-        
-        let letters = q.en.split('').sort(() => Math.random() - 0.5);
-        letters.forEach(char => {
-            const btn = document.createElement('div');
-            btn.className = "letter-bubble";
-            btn.innerText = char;
-            btn.onclick = () => {
-                const slot = document.createElement('span');
-                slot.className = "word-slot";
-                slot.innerText = char;
-                // 點擊格子的時候可以移除它
-                slot.onclick = () => {
-                    slot.remove();
-                    btn.style.visibility = "visible";
-                };
-                slots.appendChild(slot);
-                btn.style.visibility = "hidden";
-            };
-            poolDiv.appendChild(btn);
-        });
-        area.appendChild(poolDiv);
+    // ✨ 如果是複習模式，每一題都要切換成它當初錯的那個模式
+    if (state.mode === 'review') {
+        state.currentQuestionMode = q.errorMode || 'spell'; // 紀錄當前這題要用什麼模式畫畫面
     } else {
-        area.innerHTML = `<input type="text" id="spellInput" class="lock-input" style="width:90%;" placeholder="輸入單字" onkeydown="if(event.key==='Enter') checkAnswer()">`;
+        state.currentQuestionMode = state.mode; // 一般關卡跟隨大模式
+    }
+
+    // 更新 UI 文字
+    document.getElementById('qCnText').innerText = q.cn;
+    document.getElementById('qSentence').innerText = q.sen;
+    
+    // 如果是複習模式，顯示進度（例如：已對 3/5）
+    if (state.mode === 'review') {
+        document.getElementById('quizModeLabel').innerText = `🔥 複習中 (這題已對: ${q.correctStreak || 0}/5)`;
+    }
+
+    // 根據模式呼叫畫面的繪製函數 (scramble 或 spell)
+    if (state.currentQuestionMode === 'scramble') {
+        renderScramble(q);
+    } else {
+        renderSpell(q);
     }
 }
 function checkAnswer() {
     const q = state.quizSet[state.quizIdx];
-    let ans = (state.mode === 'scramble') 
-        ? Array.from(document.querySelectorAll('.word-slot')).map(el => el.innerText).join('')
-        : document.getElementById('spellInput').value.trim();
-    
-    if (ans.toLowerCase() === q.en.toLowerCase()) {
-        state.coins += 5;
-        state.mood = Math.min(100, state.mood + 1); 
-        alert("答對了！💰+5");
+    const userAns = document.getElementById('ansInput')?.value || ""; // 假設你的輸入框 ID
+
+    if (userAns.toLowerCase() === q.en.toLowerCase()) {
+        // --- 答對邏輯 ---
+        if (state.mode === 'review') {
+            // ✨ 如果是在「錯題複習模式」，累計該題的答對次數
+            q.correctStreak = (q.correctStreak || 0) + 1;
+            
+            // 如果滿 5 次，從總庫中移除
+            if (q.correctStreak >= 5) {
+                state.wrongList = state.wrongList.filter(w => w.en !== q.en);
+                alert(`恭喜！「${q.en}」已連續答對 5 次，從錯題本移除！`);
+            }
+        }
+        
+        // 繼續下一題
+        state.quizIdx++;
+        if (state.quizIdx >= state.quizSet.length) {
+            if (state.mode === 'review') {
+                // 如果複習完一輪了，重新洗牌再開始（達成一題接一題）
+                startReview(); 
+            } else {
+                goHome(); // 一般關卡結束回首頁
+            }
+        } else {
+            loadQuiz();
+        }
     } else {
+        // --- 答錯邏輯 ---
         alert("答錯了！答案是: " + q.en);
-      if(!state.wrongList.some(w => w.en === q.en)) {
+        
+        // 如果是在複習模式答錯，歸零該題的連續次數
+        if (state.mode === 'review') {
+            q.correctStreak = 0;
+        }
+
+        // 如果這題不在錯題本中，加入它
+        if (!state.wrongList.some(w => w.en === q.en)) {
             state.wrongList.push({
-                ...q, 
-                errorMode: state.mode // 紀錄錯誤時是 scramble 還是 spell
+                ...q,
+                errorMode: state.mode,
+                correctStreak: 0
             });
         }
         
-        state.mood = Math.max(0, state.mood - 5);
-        console.log("答錯！目前心情:", state.mood);
+        // 答錯也要繼續下一題 (達成一題接一題)
+        state.quizIdx++;
+        if (state.quizIdx >= state.quizSet.length) {
+            state.mode === 'review' ? startReview() : goHome();
+        } else {
+            loadQuiz();
+        }
     }
-
-    state.quizIdx++;
-
-    // 判斷是否完成所有題目
-    if (state.quizIdx >= state.quizSet.length) {
-        saveLocal(); 
-        updateUI();
-        alert("挑戰完成！");
-        goHome();
-    } else {
-        loadQuiz();
-        saveLocal(); // ✨ 每一題結束都存檔
-        updateUI();  // ✨ 更新畫面
-}
+    saveLocal();
+    updateUI();
 }
 // --- 5. 貓咪照顧與背包功能 ---
 function care(type) {
@@ -385,6 +392,24 @@ function retryWrong(index) {
     document.getElementById('gameScreen').style.display = 'block';
     
     // 3. 載入內容
+    loadQuiz();
+}
+function startReview() {
+    if (state.wrongList.length === 0) {
+        alert("目前沒有錯題可以複習喔！");
+        return;
+    }
+
+    // 1. 設定為複習模式
+    state.mode = 'review';
+    // 2. 把錯題本變成當前的題目集 (並隨機排序)
+    state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5);
+    state.quizIdx = 0;
+
+    // 3. 切換畫面
+    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+    document.getElementById('gameScreen').style.display = 'block';
+
     loadQuiz();
 }
 window.onload = () => { updateUI(); };
