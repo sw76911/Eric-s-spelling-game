@@ -298,9 +298,10 @@ function toggleModal(id, s) {
     
     modal.style.display = s ? 'block' : 'none'; 
     
-    if (s) {
-        if (id === 'shopModal') renderShop('daily'); 
-        if (id === 'wrongListModal') renderWrongList(); // *** 修正點：確保這行存在，視窗才會畫出錯題 ***
+    if(s) {
+        if(id === 'shopModal') renderShop('daily'); 
+        // *** 加入這行，這樣點開錯題本時才會去抓資料 ***
+        if(id === 'wrongListModal') renderWrongList(); 
     }
 }
 
@@ -322,5 +323,39 @@ function speakSentence() {
     msg.rate = 0.7; // 稍微慢一點點，讓學生聽得更清楚
     window.speechSynthesis.speak(msg); 
 }
+// --- 7. 錯題本功能 ---
 
+// 渲染錯題列表
+function renderWrongList() {
+    const cont = document.getElementById('wrongListContent');
+    if (!cont) return;
+    cont.innerHTML = "";
+
+    if (state.wrongList.length === 0) {
+        cont.innerHTML = "<p style='text-align:center; padding:20px; color:#999;'>目前沒有錯題喔，真棒！</p>";
+        return;
+    }
+
+    state.wrongList.forEach((q, index) => {
+        const div = document.createElement('div');
+        // 設定錯題卡片樣式
+        div.style.cssText = "background:#fff5f5; border:1px solid #ffecec; padding:15px; border-radius:15px; text-align:left; position:relative; margin-bottom:10px;";
+        
+        div.innerHTML = `
+            <div style="font-weight:bold; color:var(--primary); font-size:18px;">${q.en}</div>
+            <div style="font-size:14px; color:#666; margin:5px 0;">${q.cn}</div>
+            <div style="font-style:italic; color:#999; font-size:12px; padding-right:50px;">${q.sen}</div>
+            <button onclick="removeWrong(${index})" style="position:absolute; right:10px; top:10px; background:#ff7675; color:white; border:none; border-radius:8px; padding:5px 10px; cursor:pointer;">學會了</button>
+        `;
+        cont.appendChild(div);
+    });
+}
+
+// 移除單個錯題
+function removeWrong(index) {
+    state.wrongList.splice(index, 1);
+    saveLocal();
+    updateUI();
+    renderWrongList(); // 刪除後立即重新繪製清單
+}
 window.onload = () => { updateUI(); };
