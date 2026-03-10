@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>單字貓大冒險 V35.0</title>
-   <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -17,7 +17,6 @@
         <p style="text-align:left; margin-bottom:5px; color:#666;">🔑 管理密碼：</p>
         <input type="password" id="authCodeInput" class="lock-input" placeholder="請詢問老師或家長">
     </div>
-    
     <button onclick="verifyAccess()" style="width:80%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-size:18px; cursor:pointer; font-weight:bold;">同步進度並開始</button>
 </div>
 
@@ -34,8 +33,10 @@
             <div class="item-card" onclick="showLevelSelect('scramble')">🧩 字母重組</div>
             <div class="item-card" onclick="showLevelSelect('spell')">✍️ 拼字練習</div>
             <div class="item-card" onclick="showLevelSelect('sentence')">📖 例句挑戰</div>
-           <div class="item-card" onclick="toggleModal('wrongListModal', true)" style="background: #fff5f5; cursor:pointer;">📔 錯題複習 (<span id="wrongCount">0</span>)</div>
-        </div><h3 style="color:var(--pink); margin-top:20px;">商城與背包</h3>
+            <div class="item-card" onclick="startReview()" style="background: #fff5f5; cursor:pointer;">📔 錯題複習 (<span id="wrongCount">0</span>)</div>
+        </div>
+
+        <h3 style="color:var(--pink); margin-top:20px;">商城與背包</h3>
         <div class="grid-list">
             <div class="item-card" onclick="toggleModal('shopModal', true)">🛒 商城</div>
             <div class="item-card" onclick="toggleModal('bagModal', true)">🎒 背包</div>
@@ -64,9 +65,12 @@
             <div id="qSentence" style="font-style:italic; color:#666; font-size:16px;">Sentence...</div>
             <div id="qTrans" style="color:#999; font-size:13px; margin-top:5px;">中文翻譯</div>
             <button id="sentenceVoiceBtn" class="audio-btn" style="width:auto; border-radius:10px; padding:0 8px; margin-top:10px; font-size:12px;" onclick="speakSentence()">🔊 朗讀例句</button>
-            <div id="wordSlots" style="margin-top:15px;"></div>
+            
+            <div id="wordSlots" style="margin-top:15px; font-size:24px; font-weight:bold; color:var(--primary); min-height:30px;"></div>
         </div>
-        <div id="inputArea" style="min-height:100px;"></div>
+
+        <div id="inputArea" style="min-height:100px; margin-bottom:20px;"></div>
+        
         <button id="checkBtn" onclick="checkAnswer()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-size:18px; font-weight:bold;">送出答案</button>
     </div>
 
@@ -114,15 +118,7 @@
     </div>
     <div id="shop-content" class="grid-list"></div>
 </div>
-<div id="wrongListModal" class="modal">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0;">📔 錯題複習本</h3>
-        <button onclick="toggleModal('wrongListModal', false)" style="border:none; background:none; font-size:20px;">✖</button>
-    </div>
-    <div id="wrongListContent" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-        </div>
-    <button onclick="toggleModal('wrongListModal', false)" style="width:100%; margin-top:20px; padding:10px; border-radius:10px; border:1px solid #ccc; background:#f9f9f9;">關閉</button>
-</div>
+
 <div id="bagModal" class="modal">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h3 style="margin:0;">🎒 雲端背包</h3>
@@ -143,9 +139,7 @@
     <div id="toyOptionList" style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin:15px 0;"></div>
     <button onclick="document.getElementById('toySelectModal').style.display='none'" style="padding:8px 20px; border-radius:10px; border:1px solid #ccc;">取消</button>
 </div>
-<div class="item-card" onclick="startReview()" style="background: #fff5f5; cursor:pointer;">
-    📔 錯題複習 (<span id="wrongCount">0</span>)
-</div>
+
 <script src="data.js"></script>
 <script src="script.js"></script>
 </body>
