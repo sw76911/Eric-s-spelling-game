@@ -148,34 +148,34 @@ function loadQuiz() {
     const q = state.quizSet[state.quizIdx];
     if (!q) return;
 
+    // 判斷目前的模式
     let currentMode = (state.mode === 'review') ? (q.errorMode || 'spell') : state.mode;
 
-    // 1. 【例句處理】：顯示時挖空 (使用正則表達式不分大小寫替換)
-    const displaySentence = q.sen.replace(new RegExp(q.en, 'gi'), '__________');
+    // 1. 【顯示詞性與例句挖空】
+    if(document.getElementById('qPos')) {
+        document.getElementById('qPos').innerText = q.pos || "詞性"; 
+    }
     
+    const displaySentence = q.sen.replace(new RegExp(q.en, 'gi'), '__________');
     document.getElementById('qCnText').innerText = q.cn;
     document.getElementById('qSentence').innerText = displaySentence;
-    // 補上例句翻譯的顯示 (如果有 q.trans 的話)
     if(document.getElementById('qTrans')) document.getElementById('qTrans').innerText = q.trans || "";
     
     document.getElementById('progressIdx').innerText = state.quizIdx + 1;
     document.getElementById('totalIdx').innerText = state.quizSet.length;
     
-    if (state.mode === 'review') {
-        document.getElementById('quizModeLabel').innerText = `🔥 複習中 (連續對: ${q.correctStreak || 0}/5)`;
-    } else {
-        document.getElementById('quizModeLabel').innerText = "探險中";
-    }
-
     const wordSlots = document.getElementById('wordSlots');
     const inputArea = document.getElementById('inputArea');
     wordSlots.innerHTML = ""; 
-    wordSlots.innerText = ""; // 確保文字清空
+    wordSlots.innerText = ""; 
     inputArea.innerHTML = "";
 
+    // 2. 【關鍵邏輯：區分點擊與輸入】
     if (currentMode === 'scramble') {
+        // 模式一：字母泡泡 (點擊模式)
         renderScrambleMode(q);
     } else {
+        // 模式二、三、以及拼字類錯題：顯示輸入框
         renderSpellMode();
     }
 }
@@ -184,39 +184,22 @@ function renderScrambleMode(q) {
     const wordSlots = document.getElementById('wordSlots');
     const inputArea = document.getElementById('inputArea');
     
-    // 【修正功能】：點擊上方已拼出的字母可以刪除最後一個
     wordSlots.onclick = () => {
         const currentText = wordSlots.innerText;
-        if (currentText.length > 0) {
-            wordSlots.innerText = currentText.slice(0, -1);
-        }
+        if (currentText.length > 0) wordSlots.innerText = currentText.slice(0, -1);
     };
-    wordSlots.style.cursor = "pointer";
 
-    // 【字母泡泡】：美化樣式
     const letters = q.en.split('').sort(() => Math.random() - 0.5);
     letters.forEach(char => {
         const btn = document.createElement('button');
         btn.innerText = char;
         btn.style.cssText = `
-            background: white;
-            border: 2px solid var(--primary, #f39c12);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            margin: 5px;
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--primary, #f39c12);
-            box-shadow: 0 4px 0 var(--primary, #f39c12);
-            cursor: pointer;
-            transition: transform 0.1s;
+            background: white; border: 2px solid var(--primary, #f39c12);
+            border-radius: 50%; width: 50px; height: 50px; margin: 5px;
+            font-size: 20px; font-weight: bold; color: var(--primary, #f39c12);
+            box-shadow: 0 4px 0 var(--primary, #f39c12); cursor: pointer;
         `;
-        btn.onmousedown = () => btn.style.transform = "translateY(4px)";
-        btn.onmouseup = () => btn.style.transform = "translateY(0px)";
-        btn.onclick = () => {
-            wordSlots.innerText += char;
-        };
+        btn.onclick = () => { wordSlots.innerText += char; };
         inputArea.appendChild(btn);
     });
 }
@@ -228,13 +211,15 @@ function renderSpellMode() {
     input.id = "ansInput";
     input.className = "lock-input";
     input.placeholder = "請輸入英文單字...";
-    input.style.cssText = "width: 100%; font-size: 22px; text-align: center; border:none; border-bottom: 3px solid var(--primary, #f39c12); outline:none; background:transparent;";
+    input.autocomplete = "off"; // 關閉自動完成
+    input.style.cssText = "width: 100%; font-size: 22px; text-align: center; border:none; border-bottom: 3px solid var(--primary, #f39c12); outline:none; background:transparent; padding: 10px 0;";
     inputArea.appendChild(input);
     
-    // 增加監聽，按 Enter 鍵可以直接送出答案
+    // 按下 Enter 直接檢查答案
     input.onkeypress = (e) => { if(e.key === 'Enter') checkAnswer(); };
     
-    setTimeout(() => input.focus(), 200);
+    // 延遲聚焦，確保在手機上也能彈出鍵盤
+    setTimeout(() => input.focus(), 300);
 }
 
 // --- 修正後的答案檢查函數 ---
