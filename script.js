@@ -32,18 +32,8 @@ function loadLocal() {
         try {
             const decodedData = decodeURIComponent(escape(atob(savedRaw)));
             state = JSON.parse(decodedData);
-            if (state.bag && state.bag.length > 0) {
-                state.bag = state.bag.filter((item, index, self) =>
-                    index === self.findIndex((t) => t.id === item.id)
-                );
-            }
-        } catch(e) {
-            console.error("讀取失敗");
-            resetNewUser(state.currentUser);
-        }
-    } else {
-        resetNewUser(state.currentUser);
-    }
+        } catch(e) { console.error("讀取失敗"); resetNewUser(state.currentUser); }
+    } else { resetNewUser(state.currentUser); }
     updateUI();
 }
 
@@ -73,9 +63,9 @@ function renderShop(cat, btn) {
         btn.classList.add('active');
     }
     const cont = document.getElementById('shop-content');
+    if (!cont) return;
     cont.innerHTML = "";
     if (!shopItems[cat]) return;
-    
     shopItems[cat].forEach(i => {
         const isPermanent = (cat !== 'daily'); 
         const isOwned = isPermanent && state.bag.some(owned => owned.id === i.id);
@@ -84,35 +74,26 @@ function renderShop(cat, btn) {
         const displayPrice = isOwned ? "已擁有" : `💰 ${i.price}`;
         const clickAction = isOwned ? "alert('你已經擁有囉！')" : `buyItem('${cat}', '${i.id}')`;
         const btnBg = isOwned ? "#ccc" : "var(--primary)";
-
-        itemDiv.innerHTML = `
-            <div style="font-size:30px; margin-bottom:5px;">${i.icon || '👕'}</div>
-            <div style="font-weight:bold;">${i.name}</div>
-            <button onclick="${clickAction}" style="margin-top:10px; padding:5px 10px; border-radius:10px; border:none; background:${btnBg}; color:white;">
-                ${displayPrice}
-            </button>`;
+        itemDiv.innerHTML = `<div style="font-size:30px; margin-bottom:5px;">${i.icon || '👕'}</div><div style="font-weight:bold;">${i.name}</div><button onclick="${clickAction}" style="margin-top:10px; padding:5px 10px; border-radius:10px; border:none; background:${btnBg}; color:white;">${displayPrice}</button>`;
         cont.appendChild(itemDiv);
     });
 }
 
 function buyItem(cat, id) {
     const item = shopItems[cat].find(x => x.id === id);
-    if (!item || (cat !== 'daily' && state.bag.some(owned => owned.id === id))) return;
-
+    if (!item) return;
     if (state.coins >= item.price) {
         state.coins -= item.price;
         if (cat === 'daily') {
             if (item.type === 'fish') state.inventory.fish++;
             if (item.type === 'soap') state.inventory.soap++;
-        } else {
-            state.bag.push({ id: id, name: item.name, type: item.type, icon: item.icon });
-        }
+        } else { state.bag.push({ id: id, name: item.name, type: item.type, icon: item.icon }); }
         alert(`成功購買 ${item.name}！`);
         saveLocal(); updateUI(); renderShop(cat); 
     } else { alert("金幣不足喔！"); }
 }
 
-// --- 4. 遊戲流程控制 (修正 loadQuiz) ---
+// --- 4. 遊戲流程控制 ---
 function showLevelSelect(mode) {
     state.mode = mode;
     document.getElementById('lobbyScreen').style.display = 'none';
@@ -133,23 +114,22 @@ function renderLevelSelect() {
 }
 
 function startLevel(levelKey) {
-    // 1. 📉 執行扣除邏輯：每闖關一次，飽食度與清潔度各下降 5%
     state.hunger = Math.max(0, state.hunger - 5);
     state.clean = Math.max(0, state.clean - 5);
-
-    // 2. 準備題目資料
     state.quizSet = [...themes[levelKey]].sort(() => Math.random() - 0.5).slice(0, 15);
     state.quizIdx = 0;
-    
-    // 3. 切換顯示螢幕
     document.getElementById('levelScreen').style.display = 'none';
     document.getElementById('gameScreen').style.display = 'block';
+    saveLocal(); updateUI(); loadQuiz();
+}
 
-    // 4. ✨ 關鍵：執行存檔與更新 UI，否則畫面上的數字不會變
-    saveLocal(); 
-    updateUI(); 
-    
-    // 5. 載入第一題
+function startReview() {
+    if (state.wrongList.length === 0) return alert("目前沒有錯題可以複習喔！");
+    state.mode = 'review';
+    state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5);
+    state.quizIdx = 0;
+    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+    document.getElementById('gameScreen').style.display = 'block';
     loadQuiz();
 }
 
@@ -157,95 +137,95 @@ function loadQuiz() {
     const q = state.quizSet[state.quizIdx];
     if (!q) return;
 
-    // ✨ 如果是複習模式，每一題都要切換成它當初錯的那個模式
-    if (state.mode === 'review') {
-        state.currentQuestionMode = q.errorMode || 'spell'; // 紀錄當前這題要用什麼模式畫畫面
-    } else {
-        state.currentQuestionMode = state.mode; // 一般關卡跟隨大模式
-    }
+    // 決定目前的模式 (複習模式下會自動抓題目的 errorMode)
+    let currentMode = (state.mode === 'review') ? (q.errorMode || 'spell') : state.mode;
 
-    // 更新 UI 文字
+    // 更新介面文字
     document.getElementById('qCnText').innerText = q.cn;
     document.getElementById('qSentence').innerText = q.sen;
+    document.getElementById('progressIdx').innerText = state.quizIdx + 1;
+    document.getElementById('totalIdx').innerText = state.quizSet.length;
     
-    // 如果是複習模式，顯示進度（例如：已對 3/5）
     if (state.mode === 'review') {
-        document.getElementById('quizModeLabel').innerText = `🔥 複習中 (這題已對: ${q.correctStreak || 0}/5)`;
+        document.getElementById('quizModeLabel').innerText = `🔥 複習中 (連續對: ${q.correctStreak || 0}/5)`;
+    } else {
+        document.getElementById('quizModeLabel').innerText = "探險中";
     }
 
-    // 根據模式呼叫畫面的繪製函數 (scramble 或 spell)
-    if (state.currentQuestionMode === 'scramble') {
-        renderScramble(q);
+    // ✨ 關鍵修正：重置並生成輸入區域
+    const wordSlots = document.getElementById('wordSlots');
+    const inputArea = document.getElementById('inputArea');
+    wordSlots.innerHTML = ""; 
+    inputArea.innerHTML = "";
+    wordSlots.innerText = ""; // 清空文字
+
+    if (currentMode === 'scramble') {
+        // 問題 1：生成字母泡泡
+        const letters = q.en.split('').sort(() => Math.random() - 0.5);
+        letters.forEach(char => {
+            const btn = document.createElement('button');
+            btn.innerText = char;
+            btn.className = "item-card";
+            btn.style.cssText = "width:auto; padding:10px 15px; margin:5px; cursor:pointer; background:#fff; border:2px solid var(--primary);";
+            btn.onclick = () => { wordSlots.innerText += char; };
+            inputArea.appendChild(btn);
+        });
     } else {
-        renderSpell(q);
+        // 問題 2, 3, 4：生成拼字/例句/錯題的輸入框
+        const input = document.createElement('input');
+        input.type = "text";
+        input.id = "ansInput";
+        input.className = "lock-input";
+        input.placeholder = "請輸入英文...";
+        input.style.width = "100%";
+        inputArea.appendChild(input);
+        setTimeout(() => input.focus(), 100); // 自動聚焦
     }
 }
+
 function checkAnswer() {
     const q = state.quizSet[state.quizIdx];
-    const userAns = document.getElementById('ansInput')?.value || ""; // 假設你的輸入框 ID
+    const inputField = document.getElementById('ansInput');
+    // 如果有 inputField 就抓它的值，不然就抓 wordSlots 的文字
+    const userAns = inputField ? inputField.value.trim() : document.getElementById('wordSlots').innerText.trim();
 
     if (userAns.toLowerCase() === q.en.toLowerCase()) {
-        // --- 答對邏輯 ---
         if (state.mode === 'review') {
-            // ✨ 如果是在「錯題複習模式」，累計該題的答對次數
             q.correctStreak = (q.correctStreak || 0) + 1;
-            
-            // 如果滿 5 次，從總庫中移除
             if (q.correctStreak >= 5) {
                 state.wrongList = state.wrongList.filter(w => w.en !== q.en);
-                alert(`恭喜！「${q.en}」已連續答對 5 次，從錯題本移除！`);
             }
         }
-        
-        // 繼續下一題
         state.quizIdx++;
-        if (state.quizIdx >= state.quizSet.length) {
-            if (state.mode === 'review') {
-                // 如果複習完一輪了，重新洗牌再開始（達成一題接一題）
-                startReview(); 
-            } else {
-                goHome(); // 一般關卡結束回首頁
-            }
-        } else {
-            loadQuiz();
-        }
     } else {
-        // --- 答錯邏輯 ---
-        alert("答錯了！答案是: " + q.en);
-        
-        // 如果是在複習模式答錯，歸零該題的連續次數
-        if (state.mode === 'review') {
-            q.correctStreak = 0;
-        }
-
-        // 如果這題不在錯題本中，加入它
-        if (!state.wrongList.some(w => w.en === q.en)) {
-            state.wrongList.push({
-                ...q,
-                errorMode: state.mode,
-                correctStreak: 0
-            });
-        }
-        
-        // 答錯也要繼續下一題 (達成一題接一題)
-        state.quizIdx++;
-        if (state.quizIdx >= state.quizSet.length) {
-            state.mode === 'review' ? startReview() : goHome();
+        alert(`答錯了！答案是: ${q.en}`);
+        if (state.mode === 'review') { 
+            q.correctStreak = 0; 
         } else {
-            loadQuiz();
+            if (!state.wrongList.some(w => w.en === q.en)) {
+                state.wrongList.push({ ...q, errorMode: state.mode, correctStreak: 0 });
+            }
         }
+        state.quizIdx++; 
     }
-    saveLocal();
-    updateUI();
+
+    if (state.quizIdx >= state.quizSet.length) {
+        if (state.mode === 'review' && state.wrongList.length > 0) { 
+            startReview(); 
+        } else { 
+            alert("挑戰完成！"); 
+            goHome(); 
+        }
+    } else { loadQuiz(); }
+    saveLocal(); updateUI();
 }
+
 // --- 5. 貓咪照顧與背包功能 ---
 function care(type) {
     if (type === 'fish' && state.inventory.fish > 0) {
-        state.hunger = Math.min(100, state.hunger + 20);
-        state.inventory.fish--;
+        state.hunger = Math.min(100, state.hunger + 20); state.inventory.fish--;
     } else if (type === 'soap' && state.inventory.soap > 0) {
-        state.clean = Math.min(100, state.clean + 20);
-        state.inventory.soap--;
+        state.clean = Math.min(100, state.clean + 20); state.inventory.soap--;
     } else { return alert("道具不足！"); }
     updateUI(); saveLocal();
 }
@@ -268,8 +248,7 @@ function openToySelect() {
 function useToy(toy) {
     document.getElementById('toySelectModal').style.display = 'none';
     const disp = document.getElementById('toyDisplay');
-    disp.innerText = toy.icon;
-    disp.style.display = 'block';
+    disp.innerText = toy.icon; disp.style.display = 'block';
     state.mood = Math.min(100, state.mood + 20);
     setTimeout(() => disp.style.display = 'none', 3000);
     updateUI(); saveLocal();
@@ -285,7 +264,6 @@ function updateUI() {
     document.getElementById('inv-fish').innerText = state.inventory.fish;
     document.getElementById('inv-soap').innerText = state.inventory.soap;
     document.getElementById('catNameLabel').innerText = state.catName;
-    
     const bagCont = document.getElementById('bag-content');
     if(bagCont) {
         bagCont.innerHTML = "";
@@ -307,19 +285,14 @@ function goHome() {
 function toggleModal(id, s) {
     const modal = document.getElementById(id);
     if (!modal) return;
-    
     modal.style.display = s ? 'block' : 'none'; 
-    
-    if(s) {
-        if(id === 'shopModal') renderShop('daily'); 
-        // *** 加入這行，這樣點開錯題本時才會去抓資料 ***
-        if(id === 'wrongListModal') renderWrongList(); 
-    }
+    if(s && id === 'shopModal') renderShop('daily'); 
 }
 
 function speakWord() { 
     window.speechSynthesis.cancel(); 
     const q = state.quizSet[state.quizIdx]; 
+    if(!q) return;
     const msg = new SpeechSynthesisUtterance(q.en); msg.lang = 'en-US'; 
     window.speechSynthesis.speak(msg); 
 }
@@ -327,89 +300,10 @@ function speakWord() {
 function speakSentence() { 
     window.speechSynthesis.cancel(); 
     const q = state.quizSet[state.quizIdx]; 
-    
-    // ✨ 關鍵修正：直接使用 q.sen，這是不含底線的原始完整句子
+    if(!q) return;
     const msg = new SpeechSynthesisUtterance(q.sen); 
-    
-    msg.lang = 'en-US'; 
-    msg.rate = 0.7; // 稍微慢一點點，讓學生聽得更清楚
+    msg.lang = 'en-US'; msg.rate = 0.7; 
     window.speechSynthesis.speak(msg); 
 }
-// --- 7. 錯題本功能 ---
 
-// 渲染錯題列表
-function renderWrongList() {
-    const cont = document.getElementById('wrongListContent');
-    if (!cont) return;
-    cont.innerHTML = "";
-
-    if (state.wrongList.length === 0) {
-        cont.innerHTML = "<p style='text-align:center; padding:20px; color:#999;'>目前沒有錯題喔，真棒！</p>";
-        return;
-    }
-
-    state.wrongList.forEach((q, index) => {
-        const div = document.createElement('div');
-        div.className = "item-card";
-        div.style.cssText = "background:#fff5f5; border:1px solid #ffecec; padding:15px; border-radius:15px; text-align:left; margin-bottom:10px;";
-       // 判斷顯示名稱
-        const modeName = q.errorMode === 'scramble' ? '🧩 重組' : '✍️ 拼字';
-
-        div.innerHTML = `
-            <div style="font-weight:bold; color:var(--primary);">${q.en}</div>
-            <div style="font-size:13px; color:#666;">${q.cn}</div>
-            <div style="margin-top:10px; display:flex; gap:5px;">
-                <button onclick="retryWrong(${index})" style="background:var(--primary); color:white; border:none; border-radius:8px; padding:5px 10px; cursor:pointer;">再次挑戰 (${modeName})</button>
-                <button onclick="removeWrong(${index})" style="background:#ccc; color:white; border:none; border-radius:8px; padding:5px 10px; cursor:pointer;">移除</button>
-            </div>
-        `;
-        cont.appendChild(div);
-    });
-}
-
-// *** 關鍵保留：移除單個錯題 ***
-function removeWrong(index) {
-    if(confirm("確定要把這個單字從錯題本移除了嗎？")) {
-        state.wrongList.splice(index, 1);
-        saveLocal();
-        updateUI();
-        renderWrongList(); // 重新整理列表
-    }
-}
-
-// *** 新增：以錯誤當時的模式重新挑戰 ***
-function retryWrong(index) {
-    const target = state.wrongList[index];
-    
-    // 1. 強制設定為錯誤時的模式
-    state.mode = target.errorMode || 'spell'; 
-    state.quizSet = [target]; // 只練習這一題
-    state.quizIdx = 0;
-    
-    // 2. 切換畫面
-    toggleModal('wrongListModal', false);
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    document.getElementById('gameScreen').style.display = 'block';
-    
-    // 3. 載入內容
-    loadQuiz();
-}
-function startReview() {
-    if (state.wrongList.length === 0) {
-        alert("目前沒有錯題可以複習喔！");
-        return;
-    }
-
-    // 1. 設定為複習模式
-    state.mode = 'review';
-    // 2. 把錯題本變成當前的題目集 (並隨機排序)
-    state.quizSet = [...state.wrongList].sort(() => Math.random() - 0.5);
-    state.quizIdx = 0;
-
-    // 3. 切換畫面
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    document.getElementById('gameScreen').style.display = 'block';
-
-    loadQuiz();
-}
 window.onload = () => { updateUI(); };
