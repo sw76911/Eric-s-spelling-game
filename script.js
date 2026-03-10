@@ -114,13 +114,24 @@ function renderLevelSelect() {
 }
 
 function startLevel(levelKey) {
+    state.currentLevelName = levelKey; // 關鍵：記錄目前點擊的關卡
     state.hunger = Math.max(0, state.hunger - 5);
     state.clean = Math.max(0, state.clean - 5);
-    state.quizSet = [...themes[levelKey]].sort(() => Math.random() - 0.5).slice(0, 15);
+    
+    // 根據 levelKey 從 themes 抓取對應的單字集
+    if (themes[levelKey]) {
+        state.quizSet = [...themes[levelKey]].sort(() => Math.random() - 0.5).slice(0, 15);
+    } else {
+        return alert("找不到關卡資料！");
+    }
+    
     state.quizIdx = 0;
     document.getElementById('levelScreen').style.display = 'none';
     document.getElementById('gameScreen').style.display = 'block';
-    saveLocal(); updateUI(); loadQuiz();
+    
+    saveLocal(); 
+    updateUI(); 
+    loadQuiz();
 }
 
 function startReview() {
@@ -226,22 +237,38 @@ function renderSpellMode() {
     setTimeout(() => input.focus(), 200);
 }
 
+// --- 修正後的答案檢查函數 ---
 function checkAnswer() {
     const q = state.quizSet[state.quizIdx];
+    if (!q) return;
+
     const inputField = document.getElementById('ansInput');
-    // 如果有 inputField 就抓它的值，不然就抓 wordSlots 的文字
-    const userAns = inputField ? inputField.value.trim() : document.getElementById('wordSlots').innerText.trim();
+    const wordSlots = document.getElementById('wordSlots');
+    
+    // 優先抓取輸入框的值，若無則抓取泡泡拼出來的文字
+    let userAns = "";
+    if (inputField) {
+        userAns = inputField.value.trim();
+    } else if (wordSlots) {
+        userAns = wordSlots.innerText.trim();
+    }
 
     if (userAns.toLowerCase() === q.en.toLowerCase()) {
+        // 答對邏輯
+        state.coins += 2; // 獎勵金幣
         if (state.mode === 'review') {
             q.correctStreak = (q.correctStreak || 0) + 1;
             if (q.correctStreak >= 5) {
                 state.wrongList = state.wrongList.filter(w => w.en !== q.en);
             }
         }
-        state.quizIdx++;
     } else {
+        // 答錯邏輯
         alert(`答錯了！答案是: ${q.en}`);
+        
+        // ✨ 新增：答錯扣除心情 5%
+        state.mood = Math.max(0, state.mood - 5);
+        
         if (state.mode === 'review') { 
             q.correctStreak = 0; 
         } else {
@@ -249,20 +276,20 @@ function checkAnswer() {
                 state.wrongList.push({ ...q, errorMode: state.mode, correctStreak: 0 });
             }
         }
-        state.quizIdx++; 
     }
 
+    // 進入下一題或結束
+    state.quizIdx++;
     if (state.quizIdx >= state.quizSet.length) {
-        if (state.mode === 'review' && state.wrongList.length > 0) { 
-            startReview(); 
-        } else { 
-            alert("挑戰完成！"); 
-            goHome(); 
-        }
-    } else { loadQuiz(); }
-    saveLocal(); updateUI();
+        alert("挑戰完成！獲得了冒險獎勵。");
+        goHome();
+    } else { 
+        loadQuiz(); 
+    }
+    
+    saveLocal(); 
+    updateUI();
 }
-
 // --- 5. 貓咪照顧與背包功能 ---
 function care(type) {
     if (type === 'fish' && state.inventory.fish > 0) {
