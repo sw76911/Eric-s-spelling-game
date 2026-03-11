@@ -194,27 +194,22 @@ function renderScrambleMode(q) {
         const btn = document.createElement('button');
         btn.innerText = char;
         btn.style.cssText = `
-            background: white; border: 2px solid var(--primary, #f39c12);
-            border-radius: 50%; width: 50px; height: 50px; margin: 5px;
-            font-size: 20px; font-weight: bold; color: var(--primary, #f39c12);
-            box-shadow: 0 4px 0 var(--primary, #f39c12); cursor: pointer;
+            background: white; 
+            border: 2px solid var(--primary, #f39c12);
+            border-radius: 50%; 
+            width: 50px; 
+            height: 50px; 
+            margin: 5px;
+            font-size: 20px; 
+            font-weight: bold; 
+            color: var(--primary, #f39c12);
+            box-shadow: 0 4px 0 var(--primary, #f39c12); 
+            cursor: pointer;
         `;
-        btn.onclick = () => { wordSlots.innerText += char; };
-        inputArea.appendChild(btn);
-    });
-}
-
-    const letters = q.en.split('').sort(() => Math.random() - 0.5);
-    letters.forEach(char => {
-        const btn = document.createElement('button');
-        btn.innerText = char;
-        btn.style.cssText = `
-            background: white; border: 2px solid var(--primary, #f39c12);
-            border-radius: 50%; width: 50px; height: 50px; margin: 5px;
-            font-size: 20px; font-weight: bold; color: var(--primary, #f39c12);
-            box-shadow: 0 4px 0 var(--primary, #f39c12); cursor: pointer;
-        `;
-        btn.onclick = () => { wordSlots.innerText += char; };
+        // 點擊泡泡，字母跑到上方
+        btn.onclick = () => { 
+            wordSlots.innerText += char; 
+        };
         inputArea.appendChild(btn);
     });
 }
