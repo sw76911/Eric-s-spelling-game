@@ -114,11 +114,10 @@ function renderLevelSelect() {
 }
 
 function startLevel(levelKey) {
-    state.currentLevelName = levelKey; // 關鍵：記錄目前點擊的關卡
+    state.currentLevelName = levelKey; 
     state.hunger = Math.max(0, state.hunger - 5);
     state.clean = Math.max(0, state.clean - 5);
     
-    // 根據 levelKey 從 themes 抓取對應的單字集
     if (themes[levelKey]) {
         state.quizSet = [...themes[levelKey]].sort(() => Math.random() - 0.5).slice(0, 15);
     } else {
@@ -148,18 +147,15 @@ function loadQuiz() {
     const q = state.quizSet[state.quizIdx];
     if (!q) return;
 
-    // 判斷目前的模式
     let currentMode = (state.mode === 'review') ? (q.errorMode || 'spell') : state.mode;
 
-    // 1. 【顯示詞性與例句挖空】
     if(document.getElementById('qPos')) {
-        document.getElementById('qPos').innerText = q.pos || "詞性"; 
+        document.getElementById('qPos').innerText = q.pos || ""; 
     }
     
     const displaySentence = q.sen.replace(new RegExp(q.en, 'gi'), '__________');
     document.getElementById('qCnText').innerText = q.cn;
     document.getElementById('qSentence').innerText = displaySentence;
-    if(document.getElementById('qTrans')) document.getElementById('qTrans').innerText = q.trans || "";
     
     document.getElementById('progressIdx').innerText = state.quizIdx + 1;
     document.getElementById('totalIdx').innerText = state.quizSet.length;
@@ -170,12 +166,9 @@ function loadQuiz() {
     wordSlots.innerText = ""; 
     inputArea.innerHTML = "";
 
-    // 2. 【關鍵邏輯：區分點擊與輸入】
     if (currentMode === 'scramble') {
-        // 模式一：字母泡泡 (點擊模式)
         renderScrambleMode(q);
     } else {
-        // 模式二、三、以及拼字類錯題：顯示輸入框
         renderSpellMode();
     }
 }
@@ -196,20 +189,11 @@ function renderScrambleMode(q) {
         btn.style.cssText = `
             background: white; 
             border: 2px solid var(--primary, #f39c12);
-            border-radius: 50%; 
-            width: 50px; 
-            height: 50px; 
-            margin: 5px;
-            font-size: 20px; 
-            font-weight: bold; 
-            color: var(--primary, #f39c12);
-            box-shadow: 0 4px 0 var(--primary, #f39c12); 
-            cursor: pointer;
+            border-radius: 50%; width: 50px; height: 50px; margin: 5px;
+            font-size: 20px; font-weight: bold; color: var(--primary, #f39c12);
+            box-shadow: 0 4px 0 var(--primary, #f39c12); cursor: pointer;
         `;
-        // 點擊泡泡，字母跑到上方
-        btn.onclick = () => { 
-            wordSlots.innerText += char; 
-        };
+        btn.onclick = () => { wordSlots.innerText += char; };
         inputArea.appendChild(btn);
     });
 }
@@ -221,18 +205,14 @@ function renderSpellMode() {
     input.id = "ansInput";
     input.className = "lock-input";
     input.placeholder = "請輸入英文單字...";
-    input.autocomplete = "off"; // 關閉自動完成
+    input.autocomplete = "off"; 
     input.style.cssText = "width: 100%; font-size: 22px; text-align: center; border:none; border-bottom: 3px solid var(--primary, #f39c12); outline:none; background:transparent; padding: 10px 0;";
     inputArea.appendChild(input);
     
-    // 按下 Enter 直接檢查答案
     input.onkeypress = (e) => { if(e.key === 'Enter') checkAnswer(); };
-    
-    // 延遲聚焦，確保在手機上也能彈出鍵盤
     setTimeout(() => input.focus(), 300);
 }
 
-// --- 修正後的答案檢查函數 ---
 function checkAnswer() {
     const q = state.quizSet[state.quizIdx];
     if (!q) return;
@@ -240,17 +220,10 @@ function checkAnswer() {
     const inputField = document.getElementById('ansInput');
     const wordSlots = document.getElementById('wordSlots');
     
-    // 優先抓取輸入框的值，若無則抓取泡泡拼出來的文字
-    let userAns = "";
-    if (inputField) {
-        userAns = inputField.value.trim();
-    } else if (wordSlots) {
-        userAns = wordSlots.innerText.trim();
-    }
+    let userAns = inputField ? inputField.value.trim() : wordSlots.innerText.trim();
 
     if (userAns.toLowerCase() === q.en.toLowerCase()) {
-        // 答對邏輯
-        state.coins += 2; // 獎勵金幣
+        state.coins += 2;
         if (state.mode === 'review') {
             q.correctStreak = (q.correctStreak || 0) + 1;
             if (q.correctStreak >= 5) {
@@ -258,12 +231,8 @@ function checkAnswer() {
             }
         }
     } else {
-        // 答錯邏輯
         alert(`答錯了！答案是: ${q.en}`);
-        
-        // ✨ 新增：答錯扣除心情 5%
         state.mood = Math.max(0, state.mood - 5);
-        
         if (state.mode === 'review') { 
             q.correctStreak = 0; 
         } else {
@@ -273,7 +242,6 @@ function checkAnswer() {
         }
     }
 
-    // 進入下一題或結束
     state.quizIdx++;
     if (state.quizIdx >= state.quizSet.length) {
         alert("挑戰完成！獲得了冒險獎勵。");
@@ -281,10 +249,9 @@ function checkAnswer() {
     } else { 
         loadQuiz(); 
     }
-    
-    saveLocal(); 
-    updateUI();
+    saveLocal(); updateUI();
 }
+
 // --- 5. 貓咪照顧與背包功能 ---
 function care(type) {
     if (type === 'fish' && state.inventory.fish > 0) {
