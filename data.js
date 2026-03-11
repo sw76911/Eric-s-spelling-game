@@ -135,7 +135,7 @@ const themes = {
 { en: "Face", cn: "臉", pos: "n.", sen: "Wash your ____ before going to bed.", trans: "睡覺前要洗臉。" },
 { en: "Hair", cn: "頭發", pos: "n.", sen: "She has long curly ____.", trans: "她有一頭長長的捲髮。" },
 { en: "Lip", cn: "嘴唇", pos: "n.", sen: "She put some balm on her dry ____s.", trans: "她在乾裂的嘴唇上塗了些護唇膏。" },
-{ en: "Mouth", cn: "嘴巴", pos: "n.", sen: "Open your ____ and say "Ah".", trans: "張開嘴巴說「啊」。" },
+{ en: "Mouth", cn: "嘴巴", pos: "n.", sen: "Open your ____ and say 'Ah'.", trans: "張開嘴巴說「啊」。" },
 { en: "Nose", cn: "鼻子", pos: "n.", sen: "The dog has a very good ____.", trans: "這隻狗的嗅覺（鼻子）非常靈敏。" },
 { en: "Tongue", cn: "舌頭", pos: "n.", sen: "Don't stick your ____ out at people.", trans: "不要對人吐舌頭。" },
 { en: "Tooth", cn: "牙齒", pos: "n.", sen: "I brush my ____s every morning.", trans: "我每天早上刷牙。" },
