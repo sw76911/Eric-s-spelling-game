@@ -288,25 +288,32 @@ function useToy(toy) {
 
 // --- 6. UI 更新與輔助功能 ---
 function updateUI() {
+    // ... 前面的金幣、數值更新保持不變 ...
     document.getElementById('coinDisplay').innerText = state.coins;
-    document.getElementById('wrongCount').innerText = state.wrongList.length;
     document.getElementById('hVal').innerText = state.hunger;
     document.getElementById('cVal').innerText = state.clean;
     document.getElementById('mVal').innerText = state.mood;
     document.getElementById('inv-fish').innerText = state.inventory.fish;
     document.getElementById('inv-soap').innerText = state.inventory.soap;
     document.getElementById('catNameLabel').innerText = state.catName;
+
     const bagCont = document.getElementById('bag-content');
     if(bagCont) {
         bagCont.innerHTML = "";
         state.bag.forEach(i => {
             const div = document.createElement('div');
             div.className = "item-card";
-            div.innerText = `${i.icon || '👕'} ${i.name}`;
+            // ✨ 新增：點擊背包物品會觸發裝備功能
+            div.onclick = () => equipItem(i); 
+            div.style.cursor = "pointer";
+            div.innerHTML = `
+                <div style="font-size:30px;">${i.icon || '👕'}</div>
+                <div style="font-size:12px;">${i.name}</div>
+                <div style="font-size:10px; color:var(--primary);">點擊穿戴</div>
+            `;
             bagCont.appendChild(div);
         });
     }
-}
 
 function goHome() {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
@@ -337,5 +344,33 @@ function speakSentence() {
     msg.lang = 'en-US'; msg.rate = 0.7; 
     window.speechSynthesis.speak(msg); 
 }
+// 執行裝備動作
+function equipItem(item) {
+    // 根據物品的 part (head, suit, socks) 來決定戴在哪裡
+    if (item.part) {
+        state.equipped[item.part] = item;
+        alert(`已經幫小貓戴上 ${item.name} 囉！`);
+        saveLocal();
+        updateUI();
+    } else if (item.type === 'toy') {
+        alert("這是玩具，請在主畫面點擊「玩具」圖示來遊玩喔！");
+    }
+}
 
+// 根據 state.equipped 渲染貓咪外觀
+function renderCatAppearance() {
+    const catHead = document.getElementById('cat-hat-slot'); // 假設你的 HTML 有這些 ID
+    const catBody = document.getElementById('cat-body-slot');
+    
+    if (catHead) {
+        catHead.innerText = state.equipped.head ? state.equipped.head.icon : "";
+    }
+    if (catBody) {
+        catBody.innerText = state.equipped.suit ? state.equipped.suit.icon : "";
+        // 如果衣服有顏色 (style)，也可以改變貓咪身體顏色
+        if (state.equipped.suit && state.equipped.suit.style) {
+            document.getElementById('cat-graphic').style.color = state.equipped.suit.style;
+        }
+    }
+}
 window.onload = () => { updateUI(); };
