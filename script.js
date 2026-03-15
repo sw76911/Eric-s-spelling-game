@@ -315,6 +315,9 @@ function updateUI() {
         });
     }
 
+    // ✨ 新增：更新貓咪的外觀（渲染裝備）
+    renderCatAppearance();
+}
 function goHome() {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     document.getElementById('lobbyScreen').style.display = 'block';
