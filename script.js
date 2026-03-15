@@ -298,7 +298,10 @@ function useToy(toy) {
 
 // --- 6. UI 更新與輔助功能 ---
 function updateUI() {
-    // ... 前面的金幣、數值更新保持不變 ...
+    // 1. 更新主畫面與狀態數值
+    if(document.getElementById('wrongCount')) {
+        document.getElementById('wrongCount').innerText = state.wrongList.length;
+    }
     document.getElementById('coinDisplay').innerText = state.coins;
     document.getElementById('hVal').innerText = state.hunger;
     document.getElementById('cVal').innerText = state.clean;
@@ -307,13 +310,13 @@ function updateUI() {
     document.getElementById('inv-soap').innerText = state.inventory.soap;
     document.getElementById('catNameLabel').innerText = state.catName;
 
+    // 2. 渲染背包內容
     const bagCont = document.getElementById('bag-content');
     if(bagCont) {
         bagCont.innerHTML = "";
         state.bag.forEach(i => {
             const div = document.createElement('div');
             div.className = "item-card";
-            // ✨ 新增：點擊背包物品會觸發裝備功能
             div.onclick = () => equipItem(i); 
             div.style.cursor = "pointer";
             div.innerHTML = `
@@ -324,6 +327,10 @@ function updateUI() {
             bagCont.appendChild(div);
         });
     }
+
+    // 3. 更新貓咪視覺外觀 (裝備與毛色)
+    renderCatAppearance();
+}
 
     // ✨ 新增：更新貓咪的外觀（渲染裝備）
     renderCatAppearance();
