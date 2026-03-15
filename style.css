@@ -40,7 +40,6 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
     font-size: 38px;
     left: 0;
 }
-.head-layer { width: 120%; height: 85%; top: -65%; left: -10%; z-index: 25; border-radius: 50% 50% 0 0; }
 .socks-layer {
     position: absolute;
     width: 100%;
