@@ -374,6 +374,10 @@ function equipItem(item) {
 function renderCatAppearance() {
     const catHead = document.getElementById('cat-hat-slot'); // 假設你的 HTML 有這些 ID
     const catBody = document.getElementById('cat-body-slot');
+    const socksSlots = document.querySelectorAll('.socks-layer');
+socksSlots.forEach(slot => {
+    slot.innerText = state.equipped.socks ? state.equipped.socks.icon : "";
+});
     
     if (catHead) {
         catHead.innerText = state.equipped.head ? state.equipped.head.icon : "";
