@@ -100,7 +100,7 @@ const themes = {
 { en: "Nervous", cn: "緊張的", pos: "adj.", sen: "I am nervous about the show.", trans: "我對表演感到很緊張。" },
 { en: "Nice", cn: "美好、體面的", pos: "adj.", sen: "It is a nice house.", trans: "這是一間很棒的房子。" },
 { en: "Patient", cn: "有耐心的", pos: "adj.", sen: "You must be patient with the cat.", trans: "你對這隻貓必須有耐心。" },
-{ en: "Polite", cn: "有禮貌的", pos: "adj.", sen: "A polite student says "Thank you".", trans: "有禮貌的學生會說「謝謝」。" },
+{ en: "Polite", cn: "有禮貌的", pos: "adj.", sen: "A polite student says 'Thank you'.", trans: "有禮貌的學生會說「謝謝」。" },
 { en: "Poor", cn: "貧窮、可憐的", pos: "adj.", sen: "The poor bird cannot fly.", trans: "這隻可憐的鳥不會飛。" },
 { en: "Proud", cn: "驕傲、自豪的", pos: "adj.", sen: "I am proud of my father.", trans: "我以我父親為榮。" },
 { en: "Rich", cn: "富有的", pos: "adj.", sen: "The rich man has many cars.", trans: "那個富人有很多車。" },
