@@ -87,7 +87,17 @@ function buyItem(cat, id) {
         if (cat === 'daily') {
             if (item.type === 'fish') state.inventory.fish++;
             if (item.type === 'soap') state.inventory.soap++;
-        } else { state.bag.push({ id: id, name: item.name, type: item.type, icon: item.icon }); }
+        } else { 
+            // ✨ 關鍵修正：必須把 item.part 也存進背包裡！
+            state.bag.push({ 
+                id: id, 
+                name: item.name, 
+                type: item.type, 
+                icon: item.icon,
+                part: item.part,  // 加入這一行
+                style: item.style // 如果有顏色資訊也一併加入
+            }); 
+        }
         alert(`成功購買 ${item.name}！`);
         saveLocal(); updateUI(); renderShop(cat); 
     } else { alert("金幣不足喔！"); }
