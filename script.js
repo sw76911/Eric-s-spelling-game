@@ -372,22 +372,32 @@ function equipItem(item) {
 
 // 根據 state.equipped 渲染貓咪外觀
 function renderCatAppearance() {
-    const catHead = document.getElementById('cat-hat-slot'); // 假設你的 HTML 有這些 ID
-    const catBody = document.getElementById('cat-body-slot');
+    // 1. 渲染帽子
+    const hatSlot = document.getElementById('cat-hat-slot');
+    if (hatSlot) {
+        hatSlot.innerText = state.equipped.head ? state.equipped.head.icon : "";
+    }
+
+    // 2. 渲染衣服
+    const bodySlot = document.getElementById('cat-body-slot');
+    if (bodySlot) {
+        bodySlot.innerText = state.equipped.suit ? state.equipped.suit.icon : "";
+    }
+
+    // 3. 渲染襪子 (因為有四隻腳，我們用 class 選擇器)
     const socksSlots = document.querySelectorAll('.socks-layer');
-socksSlots.forEach(slot => {
-    slot.innerText = state.equipped.socks ? state.equipped.socks.icon : "";
-});
-    
-    if (catHead) {
-        catHead.innerText = state.equipped.head ? state.equipped.head.icon : "";
+    socksSlots.forEach(slot => {
+        slot.innerText = state.equipped.socks ? state.equipped.socks.icon : "";
+    });
+
+    // 4. 更新貓咪基礎顏色 (換毛功能)
+    if (state.equipped.color) {
+        document.documentElement.style.setProperty('--cat-color', state.equipped.color);
     }
-    if (catBody) {
-        catBody.innerText = state.equipped.suit ? state.equipped.suit.icon : "";
-        // 如果衣服有顏色 (style)，也可以改變貓咪身體顏色
-        if (state.equipped.suit && state.equipped.suit.style) {
-            document.getElementById('cat-graphic').style.color = state.equipped.suit.style;
-        }
-    }
+}
+function changeSkin(colorCode) {
+    state.equipped.color = colorCode;
+    saveLocal();
+    updateUI();
 }
 window.onload = () => { updateUI(); };
