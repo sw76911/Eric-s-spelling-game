@@ -331,10 +331,6 @@ function updateUI() {
     // 3. 更新貓咪視覺外觀 (裝備與毛色)
     renderCatAppearance();
 }
-
-    // ✨ 新增：更新貓咪的外觀（渲染裝備）
-    renderCatAppearance();
-}
 function goHome() {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     document.getElementById('lobbyScreen').style.display = 'block';
@@ -406,5 +402,13 @@ function changeSkin(colorCode) {
     state.equipped.color = colorCode;
     saveLocal();
     updateUI();
+}
+function renameCat() {
+    const newName = prompt("想幫小貓取什麼新名字呢？", state.catName);
+    if (newName && newName.trim() !== "") {
+        state.catName = newName.trim();
+        saveLocal();
+        updateUI();
+    }
 }
 window.onload = () => { updateUI(); };
