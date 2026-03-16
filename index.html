@@ -81,23 +81,37 @@
             <button onclick="care('soap')" class="item-card" style="padding:4px 10px; font-size:12px;">🧼 洗澡(<span id="inv-soap">0</span>)</button>
             <button onclick="openToySelect()" class="item-card" style="padding:4px 10px; font-size:12px;">🧶 玩耍</button>
         </div>
-        <div class="cat-stage">
-            <div id="toyDisplay" style="position:absolute; top:10px; right:50px; font-size:40px; display:none;">⚽</div>
-            <div id="catObject" class="cat-container">
-                <div class="cat-ear l"></div><div class="cat-ear r"></div>
-                <div class="cat-tail"></div>
-                <div class="cat-leg" style="left:20px; bottom:0;"><div class="socks-layer layer-item"></div></div>
-                <div class="cat-leg" style="left:35px; bottom:-2px;"><div class="socks-layer layer-item"></div></div>
-                <div class="cat-leg" style="left:55px; bottom:0;"><div class="socks-layer layer-item"></div></div>
-                <div class="cat-leg" style="left:70px; bottom:-2px;"><div class="socks-layer layer-item"></div></div>
-               <div class="cat-body"><div id="cat-body-slot" class="layer-item"></div></div>
-<div class="cat-head">
-<div id="cat-hat-slot" class="layer-item"></div>
-                    <div class="cat-eye l"></div><div class="cat-eye r"></div>
-                    <div style="position:absolute; width:6px; height:4px; background:var(--pink); border-radius:50%; top:25px; left:50%; transform:translateX(-50%);"></div>
-                </div>
-            </div>
+<div class="cat-stage">
+    <div id="toyDisplay" style="position:absolute; top:10px; right:50px; font-size:40px; display:none;">⚽</div>
+    
+    <div id="catObject" class="cat-container">
+        <div class="cat-ear l"></div><div class="cat-ear r"></div>
+        <div class="cat-tail"></div>
+        
+        <div class="cat-leg" style="left:20px; bottom:0; cursor:pointer;" onclick="unequip('socks')">
+            <div class="socks-layer layer-item"></div>
         </div>
+        <div class="cat-leg" style="left:35px; bottom:-2px; cursor:pointer;" onclick="unequip('socks')">
+            <div class="socks-layer layer-item"></div>
+        </div>
+        <div class="cat-leg" style="left:55px; bottom:0; cursor:pointer;" onclick="unequip('socks')">
+            <div class="socks-layer layer-item"></div>
+        </div>
+        <div class="cat-leg" style="left:70px; bottom:-2px; cursor:pointer;" onclick="unequip('socks')">
+            <div class="socks-layer layer-item"></div>
+        </div>
+
+        <div class="cat-body" style="cursor:pointer;" onclick="unequip('suit')">
+            <div id="cat-body-slot" class="layer-item"></div>
+        </div>
+
+        <div class="cat-head" style="cursor:pointer;" onclick="unequip('head')">
+            <div id="cat-hat-slot" class="layer-item"></div>
+            <div class="cat-eye l"></div><div class="cat-eye r"></div>
+            <div style="position:absolute; width:6px; height:4px; background:var(--pink); border-radius:50%; top:25px; left:50%; transform:translateX(-50%);"></div>
+        </div>
+    </div>
+</div>
         <div style="display:flex; justify-content:space-around; font-size:12px; color:#666;">
             <span>🍖 <span id="hVal">80</span>%</span><span>🧼 <span id="cVal">80</span>%</span><span>❤️ <span id="mVal">80</span>%</span>
         </div>
