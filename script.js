@@ -411,4 +411,14 @@ function renameCat() {
         updateUI();
     }
 }
+// 脫掉指定部位的裝備
+function unequip(part) {
+    if (state.equipped && state.equipped[part]) {
+        const itemName = state.equipped[part].name;
+        state.equipped[part] = null; // 清除該部位的裝備
+        alert(`已經幫小貓脫掉 ${itemName} 囉！`);
+        saveLocal();
+        updateUI();
+    }
+}
 window.onload = () => { updateUI(); };
