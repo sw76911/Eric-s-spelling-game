@@ -362,12 +362,19 @@ function speakSentence() {
 }
 // 執行裝備動作
 function equipItem(item) {
-    // 根據物品的 part (head, suit, socks) 來決定戴在哪裡
     if (item.part) {
-        state.equipped[item.part] = item;
-        alert(`已經幫小貓戴上 ${item.name} 囉！`);
+        // ✨ 改良：如果目前穿的正是這件，就把它脫掉 (設為 null)
+        if (state.equipped[item.part] && state.equipped[item.part].id === item.id) {
+            state.equipped[item.part] = null;
+            alert(`已經幫小貓脫掉 ${item.name} 囉！`);
+        } else {
+            // 否則就穿上新裝備
+            state.equipped[item.part] = item;
+            alert(`已經幫小貓戴上 ${item.name} 囉！`);
+        }
+        
         saveLocal();
-        updateUI();
+        updateUI(); // 這裡會呼叫 renderCatAppearance() 刷新畫面
     } else if (item.type === 'toy') {
         alert("這是玩具，請在主畫面點擊「玩具」圖示來遊玩喔！");
     }
@@ -378,20 +385,22 @@ function renderCatAppearance() {
     // 1. 渲染帽子
     const hatSlot = document.getElementById('cat-hat-slot');
     if (hatSlot) {
-        hatSlot.innerText = state.equipped.head ? state.equipped.head.icon : "";
+        hatSlot.innerText = (state.equipped.head && state.equipped.head.icon) ? state.equipped.head.icon : "";
+        // 額外微調：如果有帽子，稍微往上提一點，才不會擋住眼睛
+        hatSlot.style.top = "-30px"; 
     }
 
     // 2. 渲染衣服
     const bodySlot = document.getElementById('cat-body-slot');
     if (bodySlot) {
-        bodySlot.innerText = state.equipped.suit ? state.equipped.suit.icon : "";
+        bodySlot.innerText = (state.equipped.suit && state.equipped.suit.icon) ? state.equipped.suit.icon : "";
     }
 
-    // 3. 渲染襪子 (因為有四隻腳，我們用 class 選擇器)
+    // 3. 渲染襪子 (修正：加上遺失的 ); )
     const socksSlots = document.querySelectorAll('.socks-layer');
     socksSlots.forEach(slot => {
-        slot.innerText = state.equipped.socks ? state.equipped.socks.icon : "";
-    });
+        slot.innerText = (state.equipped.socks && state.equipped.socks.icon) ? state.equipped.socks.icon : "";
+    }); // 👈 這裡原本少了 ");" 導致語法錯誤
 
     // 4. 更新貓咪基礎顏色 (換毛功能)
     if (state.equipped.color) {
