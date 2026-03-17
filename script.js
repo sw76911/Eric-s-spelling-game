@@ -5,7 +5,7 @@ let state = {
     currentUser: '',
     coins: 100, hunger: 80, clean: 80, mood: 80, catName: '我的小貓',
     inventory: { fish: 2, soap: 1 }, bag: [], wrongList: [],
-    equipped: { head:null, suit:null, socks:null, color:'#f39c12' },
+    equipped: { head:null, suit:null, feet:null, color:'#f39c12' },
     quizSet: [], quizIdx: 0, mode: '', currentLevelName: ''
 };
 
@@ -14,7 +14,11 @@ const shopItems = {
     toys: [{id:'t1', name:'皮球', price:20, type:'toy', icon:'⚽'}, {id:'t2', name:'逗貓棒', price:30, type:'toy', icon:'🪄'}],
     hats: [{id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head', icon:'👒'}, {id:'h2', name:'飛行帽', price:90, style:'#8b4513', part:'head', icon:'👨‍✈️'}],
     clothes: [{id:'c1', name:'小T', price:60, style:'#98fb98', part:'suit', icon:'👕'}, {id:'c2', name:'背心', price:120, style:'skyblue', part:'suit', icon:'🎽'}],
-    footwear: [{id:'k1', name:'運動鞋', price:15, style:'#ffffff', part:' footwear', icon:'👟'}, {id:'k2', name:'登山靴', price:15, style:'#333333', part:' footwear', icon:'🥾'}]
+    // ✨ 修正重點：把 ' footwear' 改成 'feet' (不要有空格)
+    footwear: [
+        {id:'k1', name:'運動鞋', price:15, style:'#ffffff', part:'feet', icon:'👟'}, 
+        {id:'k2', name:'登山靴', price:15, style:'#333333', part:'feet', icon:'🥾'}
+    ]
 };
 
 // --- 2. 存檔與安全性邏輯 ---
@@ -396,11 +400,12 @@ function renderCatAppearance() {
         bodySlot.innerText = (state.equipped.suit && state.equipped.suit.icon) ? state.equipped.suit.icon : "";
     }
 
-    // 3. 渲染襪子 (修正：加上遺失的 ); )
-    const socksSlots = document.querySelectorAll('.socks-layer');
-    socksSlots.forEach(slot => {
-        slot.innerText = (state.equipped.socks && state.equipped.socks.icon) ? state.equipped.socks.icon : "";
-    }); // 👈 這裡原本少了 ");" 導致語法錯誤
+// 3. 渲染襪子/鞋子
+const socksSlots = document.querySelectorAll('.socks-layer');
+socksSlots.forEach(slot => {
+    // ✨ 確保這裡是用 feet 而不是 socks
+    slot.innerText = (state.equipped.feet && state.equipped.feet.icon) ? state.equipped.feet.icon : "";
+});
 
     // 4. 更新貓咪基礎顏色 (換毛功能)
     if (state.equipped.color) {
