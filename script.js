@@ -14,7 +14,7 @@ const shopItems = {
     toys: [{id:'t1', name:'皮球', price:20, type:'toy', icon:'⚽'}, {id:'t2', name:'逗貓棒', price:30, type:'toy', icon:'🪄'}],
     hats: [{id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head', icon:'👒'}, {id:'h2', name:'飛行帽', price:90, style:'#8b4513', part:'head', icon:'👨‍✈️'}],
     clothes: [{id:'c1', name:'小T', price:60, style:'#98fb98', part:'suit', icon:'👕'}, {id:'c2', name:'背心', price:120, style:'skyblue', part:'suit', icon:'🎽'}],
-    shoes: [{id:'k1', name:'運動鞋', price:15, style:'#ffffff', part:'socks', icon:'👟'}, {id:'k2', name:'登山靴', price:15, style:'#333333', part:'socks', icon:'🥾'}]
+    footwear: [{id:'k1', name:'運動鞋', price:15, style:'#ffffff', part:' footwear', icon:'👟'}, {id:'k2', name:'登山靴', price:15, style:'#333333', part:' footwear', icon:'🥾'}]
 };
 
 // --- 2. 存檔與安全性邏輯 ---
