@@ -33,7 +33,8 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
     justify-content: center;
     align-items: center;
     pointer-events: none; /* 讓裝備不影響點擊 */
-    z-index: 20;
+    z-index: 20;pointer-events: none; 
+    font-size: 38px; /* 設定圖示大小 */
 }
 #cat-hat-slot {
     top: -28px; /* 往上移到頭頂 */
