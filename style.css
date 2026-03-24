@@ -52,7 +52,6 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
     left: 50%;
     transform: translateX(-50%);
 }
-
 /* 4. 關鍵修正：確保零件不會隱藏溢出的帽子 */
 .cat-head, .cat-body, .cat-leg {
     position: absolute;
@@ -62,25 +61,61 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
 }
 
 /* 5. 襪子微調：讓它剛好包住腳 */
+/* --- 2. 鞋子基礎樣式優化 --- */
 .socks-layer {
     position: absolute;
     width: 100%;
-    bottom: -10px; /* 稍微往下沉一點 */
-    font-size: 20px !important;
+    font-size: 28px !important; 
+    bottom: -8px !important; 
     left: 0;
+    text-align: center;
+    z-index: 20;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 20;
+    line-height: 1;
+    pointer-events: none;
+    transition: transform 0.2s; /* 讓轉身時鞋子翻轉更平滑 */
 }
+
+/* --- 讓鞋子方向永遠保持一致 --- */
+/* 如果你發現轉身後鞋子方向還是反的，可以嘗試把下面這段暫時註解掉看看 */
+.cat-leg:nth-of-type(3) .socks-layer, 
+.cat-leg:nth-of-type(4) .socks-layer {
+    transform: scaleX(-1); 
+    margin-left: -2px; 
+}
+.cat-leg { 
+    position: absolute; 
+    width: 10px; 
+    height: 18px; 
+    background: var(--cat-color); 
+    border-radius: 5px; 
+    z-index: 6; 
+    bottom: 0; /* 確保腳在底部 */
+    transition: 0.3s;
+    overflow: visible !important; 
+}
+
+/* 確保四隻腳散開，不要疊在一起 */
+.cat-leg:nth-of-type(1) { left: 20px; }
+.cat-leg:nth-of-type(2) { left: 35px; }
+.cat-leg:nth-of-type(3) { left: 50px; }
+.cat-leg:nth-of-type(4) { left: 65px; }
 .cat-ear { position: absolute; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 18px solid var(--cat-color); top: -8px; z-index: 9; }
 .cat-ear.l { left: 12px; transform: rotate(-20deg); } .cat-ear.r { left: 40px; transform: rotate(20deg); }
 .cat-eye { position: absolute; width: 6px; height: 6px; background: #333; border-radius: 50%; top: 16px; animation: blink 4s infinite; }
 .cat-eye.l { left: 12px; } .cat-eye.r { right: 12px; }
-.cat-leg { position: absolute; width: 10px; height: 18px; background: var(--cat-color); border-radius: 5px; z-index: 4; }
 .cat-tail { position: absolute; width: 8px; height: 45px; background: var(--cat-color); border-radius: 10px; bottom: 40px; right: 15px; z-index: 3; transform-origin: bottom; animation: tailWag 2s infinite ease-in-out; }
 
-@keyframes lazyWalk { 0% { left: 5%; transform: scaleX(1); } 50% { left: 80%; transform: scaleX(1); } 51% { transform: scaleX(-1); } 100% { left: 5%; transform: scaleX(-1); } }
+@keyframes lazyWalk { 
+    0% { left: 5%; transform: scaleX(1) rotate(0deg); }
+    25% { transform: scaleX(1) rotate(2deg); } /* 走路歪一下 */
+    50% { left: 80%; transform: scaleX(1) rotate(0deg); }
+    51% { transform: scaleX(-1) rotate(0deg); }
+    75% { transform: scaleX(-1) rotate(-2deg); } /* 回程歪一下 */
+    100% { left: 5%; transform: scaleX(-1) rotate(0deg); }
+}
 @keyframes tailWag { 0%, 100% { transform: rotate(15deg); } 50% { transform: rotate(40deg); } }
 @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0); } }
 
