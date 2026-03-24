@@ -12,7 +12,7 @@ let state = {
 const shopItems = {
     daily: [{id:'f1', name:'鮮魚', price:10, type:'fish', icon:'🐟'}, {id:'s1', name:'沐浴乳', price:10, type:'soap', icon:'🧼'}],
     toys: [{id:'t1', name:'皮球', price:20, type:'toy', icon:'⚽'}, {id:'t2', name:'逗貓棒', price:30, type:'toy', icon:'🪄'}],
-    hats: [{id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head', icon:'👒'}, {id:'h2', name:'飛行帽', price:90, style:'#8b4513', part:'head', icon:'👨‍✈️'}],
+    hats: [{id:'h1', name:'草帽', price:40, style:'#f0e68c', part:'head', icon:'👒'}, {id:'h2', name:'紳士帽', price:90, style:'#8b4513', part:'head', icon:'🎩'}],
     clothes: [{id:'c1', name:'小T', price:60, style:'#98fb98', part:'suit', icon:'👕'}, {id:'c2', name:'背心', price:120, style:'skyblue', part:'suit', icon:'🎽'}],
     // ✨ 修正重點：把 ' footwear' 改成 'feet' (不要有空格)
     footwear: [
