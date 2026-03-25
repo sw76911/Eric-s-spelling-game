@@ -82,68 +82,42 @@ body { font-family: 'PingFang TC', sans-serif; background: var(--bg); display: f
     overflow: visible !important; /* 👈 允許帽子長到頭部外面 */
 }
 
-/* 5. 襪子微調：讓它剛好包住腳 */
-/* --- 2. 鞋子基礎樣式優化 --- */
-.socks-layer {
-    position: absolute;
-    width: 100%;
-    font-size: 20px !important; 
-    bottom: -8px !important; 
-    left: 0;
-    text-align: center;
-    z-index: 20;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    line-height: 1;
-    pointer-events: none;
-    transition: transform 0.2s; /* 讓轉身時鞋子翻轉更平滑 */
-}
+/* --- 5. 貓咪肢體與裝備統一管理 --- */
 
-/* --- 讓鞋子方向永遠保持一致 --- */
-/* 如果你發現轉身後鞋子方向還是反的，可以嘗試把下面這段暫時註解掉看看 */
-.cat-leg:nth-of-type(3) .socks-layer, 
-.cat-leg:nth-of-type(4) .socks-layer {
-    transform: scaleX(-1); /* 水平翻轉 Emoji，朝向右邊走時後腳鞋子朝左 */
-    /* 翻轉後如果位置偏移，可以加一個 left 調整 */
-    margin-left: -2px; 
-}
+/* 腳的基礎設定：統一在這裡改就好 */
 .cat-leg {
     position: absolute;
     width: 10px;
     height: 18px;
     background: var(--cat-color);
     border-radius: 5px;
-    z-index: 4; /* 衣服會蓋在腳上面 */
-    bottom: 0; /* 確保腳在身體底部齊平 */
+    z-index: 6; /* 讓腳在身體(5)的前面，比較有立體感 */
+    bottom: 0; 
+    overflow: visible !important; /* 確保鞋子可以超出範圍 */
+    transition: 0.3s;
 }
-
-/* ✨ 關鍵修正 (1)：讓 CSS 選取器應用到 **所有腳** (.cat-leg) 的鞋子層 (.socks-layer) */
-/* 原本可能寫成 .socks-layer {...}，
-   改成 .cat-leg .socks-layer {...} 
-*/
+/* 統一管理所有腳上的鞋子 */
 .cat-leg .socks-layer {
     position: absolute;
     width: 100%;
-    /* height: 100%; 👈 建議刪除這行 */
-    
-    /* (A) 大一點：所有鞋子都變大 (原本可能是 20px) */
-    font-size: 28px !important; 
-    
-    /* (B) 下面一點 (重要)：負值會超出腳的範圍往下移 */
-    /* 調整到齊平地板的位置 */
-    bottom: -8px !important; 
-    
+    font-size: 20px !important;
+    bottom: -8px !important;    /* 👈 負值才會「下面一點」 */
     left: 0;
-    text-align: center;
-    z-index: 20; /* 確保鞋子在最前面 */
+    z-index: 20;
     display: flex;
     justify-content: center;
     align-items: center;
     line-height: 1;
-    transition: 0.1s; /* 加個小過渡，轉身時比較自然 */
+    pointer-events: none; /* 防止鞋子擋住點擊事件 */
+    transition: transform 0.2s; /* 轉身平滑化 */
 }
 
+/* 後腳鞋子翻轉 (讓畫面更自然) */
+.cat-leg:nth-of-type(3) .socks-layer, 
+.cat-leg:nth-of-type(4) .socks-layer {
+    transform: scaleX(-1) !important;
+    margin-left: -2px;
+}
 /* 確保四隻腳散開，不要疊在一起 */
 .cat-leg:nth-of-type(1) { left: 20px; }
 .cat-leg:nth-of-type(2) { left: 35px; }
